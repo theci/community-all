@@ -237,6 +237,9 @@ importers:
       tailwindcss:
         specifier: ^3.4.1
         version: 3.4.19
+      zustand:
+        specifier: ^5.0.2
+        version: 5.0.9(@types/react@19.2.7)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
     devDependencies:
       '@types/react':
         specifier: ^19

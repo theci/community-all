@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useThemeStore } from '@/lib/store/themeStore';
+import { useThemeStore } from '@ddd3/design-system';
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { resolvedTheme, initializeTheme } = useThemeStore();

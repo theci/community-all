@@ -1,6 +1,6 @@
 'use client';
 
-import { useThemeStore } from '@ddd3/design-system';
+import { useThemeStore } from './stores/themeStore';
 
 export default function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useThemeStore();
