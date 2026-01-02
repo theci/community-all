@@ -2,6 +2,7 @@
 node_modules/
 .pnp
 .pnp.js
+generated/
 
 # Next.js
 .next/
@@ -64,6 +65,10 @@ build/
 *.iml
 *.ipr
 *.iws
+bin/
+
+# Binary / cache
+*.bin
 
 # Docker
 # docker-compose.override.yml (uncomment if you want to ignore it)
@@ -86,3 +91,6 @@ yarn.lock
 # Build artifacts
 *.tsbuildinfo
 .turbo/
+
+# OpenAPI 자동 생성 파일 (pnpm run generate로 재생성 가능)
+src/generated/
