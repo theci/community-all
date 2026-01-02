@@ -1,0 +1,17 @@
+{
+  "name": "@ddd3/api-contract",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "generate": "openapi-typescript-codegen --input http://localhost:8080/v3/api-docs --output ./src/generated --client axios"
+  },
+  "dependencies": {
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "openapi-typescript-codegen": "^0.29.0",
+    "typescript": "^5"
+  }
+}
