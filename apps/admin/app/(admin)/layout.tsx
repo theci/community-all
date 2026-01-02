@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
+import { useAuthStore } from '@/lib/store/authStore';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui';
 
@@ -12,7 +13,23 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const setUser = useAuthStore((state) => state.setUser);
+
+  // URL 파라미터에서 토큰 받아서 저장
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      localStorage.setItem('accessToken', token);
+      // URL에서 token 파라미터 제거
+      const url = new URL(window.location.href);
+      url.searchParams.delete('token');
+      window.history.replaceState({}, '', url.toString());
+      // 페이지 새로고침해서 인증 상태 반영
+      window.location.reload();
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

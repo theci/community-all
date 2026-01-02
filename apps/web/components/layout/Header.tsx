@@ -4,15 +4,25 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
+import { useAuthStore } from '@/lib/store/authStore';
 import { NotificationBell } from '@/components/features/notification';
 import { ThemeToggle } from '@/components/ui';
 
 export default function Header() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
+  const accessToken = useAuthStore((state) => state.accessToken);
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  const handleAdminClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      window.location.href = `http://3.39.36.234:3002/admin?token=${encodeURIComponent(token)}`;
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,13 +162,16 @@ export default function Header() {
                       {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
                         <>
                           <hr className="my-1 border-gray-200 dark:border-gray-700" />
-                          <Link
-                            href="/admin"
+                          <a
+                            href="http://3.39.36.234:3002/admin"
                             className="block px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
-                            onClick={() => setShowUserMenu(false)}
+                            onClick={(e) => {
+                              handleAdminClick(e);
+                              setShowUserMenu(false);
+                            }}
                           >
                             ⚙️ 관리자 페이지
-                          </Link>
+                          </a>
                         </>
                       )}
                       <hr className="my-1 border-gray-200 dark:border-gray-700" />
