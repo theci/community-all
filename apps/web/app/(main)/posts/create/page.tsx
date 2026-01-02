@@ -6,9 +6,9 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { postService, categoryService, attachmentService } from '@/lib/services';
-import { Category, PostStatus } from '@/lib/types';
+import { Category, PostStatus } from '@ddd3/types';
 import { useAuth } from '@/lib/hooks';
-import { Button, Input, Card } from '@/components/ui';
+import { Button, Input, Card } from '@ddd3/design-system';
 
 export default function CreatePostPage() {
   const router = useRouter();

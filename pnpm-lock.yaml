@@ -14,6 +14,15 @@ importers:
 
   apps/admin:
     dependencies:
+      '@ddd3/api-contract':
+        specifier: workspace:*
+        version: link:../../packages/api-contract
+      '@ddd3/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
+      '@ddd3/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       axios:
         specifier: ^1.7.9
         version: 1.13.2
@@ -136,6 +145,15 @@ importers:
 
   apps/web:
     dependencies:
+      '@ddd3/api-contract':
+        specifier: workspace:*
+        version: link:../../packages/api-contract
+      '@ddd3/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
+      '@ddd3/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       axios:
         specifier: ^1.7.9
         version: 1.13.2

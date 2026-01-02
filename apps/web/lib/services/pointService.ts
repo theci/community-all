@@ -1,5 +1,5 @@
-import { apiClient } from '../api';
-import type { PointInfo, PointTransaction, PointRanking } from '../types';
+import { apiClient } from '@ddd3/api-contract';
+import type { PointInfo, PointTransaction, PointRanking } from '@ddd3/types';
 
 interface ApiResponse<T> {
   success: boolean;

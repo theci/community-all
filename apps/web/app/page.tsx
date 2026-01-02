@@ -7,7 +7,7 @@ import { postService } from '@/lib/services';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Sidebar from '@/components/layout/Sidebar';
-import type { Post } from '@/lib/types';
+import type { Post } from '@ddd3/types';
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();

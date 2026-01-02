@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ddd3/api-contract": "workspace:*",
+    "@ddd3/types": "workspace:*",
+    "@ddd3/design-system": "workspace:*",
     "axios": "^1.7.9",
     "next": "^15.1.0",
     "react": "^19.0.0",

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { postService, categoryService } from '@/lib/services';
-import { Post, Category } from '@/lib/types';
+import { Post, Category } from '@ddd3/types';
 import { PostCard } from '@/components/features/post/PostCard';
-import { Button } from '@/components/ui';
+import { Button } from '@ddd3/design-system';
 import Link from 'next/link';
 
 export default function PostsPage() {

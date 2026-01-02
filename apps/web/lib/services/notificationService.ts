@@ -1,5 +1,5 @@
-import { apiClient } from '../api';
-import type { Notification, NotificationListResponse } from '../types';
+import { apiClient } from '@ddd3/api-contract';
+import type { Notification, NotificationListResponse } from '@ddd3/types';
 
 interface ApiResponse<T> {
   success: boolean;

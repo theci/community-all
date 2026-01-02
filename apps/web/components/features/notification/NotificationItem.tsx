@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import type { Notification, NotificationType } from '@/lib/types';
+import type { Notification, NotificationType } from '@ddd3/types';
 
 interface NotificationItemProps {
   notification: Notification;

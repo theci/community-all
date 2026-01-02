@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
 import { useAuthStore } from '@/lib/store/authStore';
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/ui';
+import { ThemeToggle } from '@ddd3/design-system';
 
 export default function AdminLayout({
   children,

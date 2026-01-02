@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { adminService } from '@/lib/services';
-import type { AdminStatistics, RoleStatistics, PointStatistics } from '@/lib/types';
+import type { AdminStatistics, RoleStatistics, PointStatistics } from '@ddd3/types';
 
 export default function AdminDashboardPage() {
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);

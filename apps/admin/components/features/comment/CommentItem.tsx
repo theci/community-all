@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Comment } from '@/lib/types';
+import { Comment } from '@ddd3/types';
 import { CommentForm } from './CommentForm';
-import { Button } from '@/components/ui';
+import { Button } from '@ddd3/design-system';
 
 interface CommentItemProps {
   comment: Comment;

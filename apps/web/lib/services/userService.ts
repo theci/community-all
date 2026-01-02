@@ -1,5 +1,5 @@
-import { apiClient } from '../api';
-import type { User, UserWithStats } from '../types';
+import { apiClient } from '@ddd3/api-contract';
+import type { User, UserWithStats } from '@ddd3/types';
 
 interface ApiResponse<T> {
   success: boolean;

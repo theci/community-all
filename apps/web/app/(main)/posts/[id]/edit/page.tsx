@@ -4,9 +4,9 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { postService, categoryService } from '@/lib/services';
-import { Category, Post, PostStatus } from '@/lib/types';
+import { Category, Post, PostStatus } from '@ddd3/types';
 import { useAuth } from '@/lib/hooks';
-import { Button, Input, Card } from '@/components/ui';
+import { Button, Input, Card } from '@ddd3/design-system';
 
 export default function EditPostPage() {
   const router = useRouter();

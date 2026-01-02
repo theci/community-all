@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { pointService } from '@/lib/services';
 import { useAuth } from '@/lib/hooks';
-import { Card } from '@/components/ui';
-import type { PointRanking, PointInfo } from '@/lib/types';
+import { Card } from '@ddd3/design-system';
+import type { PointRanking, PointInfo } from '@ddd3/types';
 
 export default function RankingPage() {
   const { user } = useAuth();

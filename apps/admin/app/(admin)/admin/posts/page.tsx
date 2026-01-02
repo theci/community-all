@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { adminService } from '@/lib/services';
-import { PostManagement, UpdatePostStatusRequest, MarkAsNoticeRequest, BulkPostActionRequest, BulkActionType } from '@/lib/types';
+import { PostManagement, UpdatePostStatusRequest, MarkAsNoticeRequest, BulkPostActionRequest, BulkActionType } from '@ddd3/types';
 import { PostStatus } from '@/lib/types/post';
-import { Button, Input, Card } from '@/components/ui';
+import { Button, Input, Card } from '@ddd3/design-system';
 import { useAuth } from '@/lib/hooks';
 
 export default function AdminPostsPage() {

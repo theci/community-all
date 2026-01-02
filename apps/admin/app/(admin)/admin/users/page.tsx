@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { adminService } from '@/lib/services';
-import type { UserManagement, UserDetail } from '@/lib/types';
+import type { UserManagement, UserDetail } from '@ddd3/types';
 import { UserStatus, UserRole } from '@/lib/types/user';
-import { Button, Modal } from '@/components/ui';
+import { Button, Modal } from '@ddd3/design-system';
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState<UserManagement[]>([]);

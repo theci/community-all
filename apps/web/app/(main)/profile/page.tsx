@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks';
 import { userService, postService, pointService } from '@/lib/services';
-import { Card, Button } from '@/components/ui';
-import type { UserWithStats, Post, PointInfo } from '@/lib/types';
+import { Card, Button } from '@ddd3/design-system';
+import type { UserWithStats, Post, PointInfo } from '@ddd3/types';
 
 type TabType = 'posts' | 'comments' | 'likes' | 'scraps';
 

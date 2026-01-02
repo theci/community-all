@@ -1,5 +1,5 @@
-import { apiClient } from '../api';
-import type { LoginRequest, RegisterRequest, AuthResponse, RefreshTokenRequest } from '../types';
+import { apiClient } from '@ddd3/api-contract';
+import type { LoginRequest, RegisterRequest, AuthResponse, RefreshTokenRequest } from '@ddd3/types';
 
 interface ApiResponse<T> {
   success: boolean;

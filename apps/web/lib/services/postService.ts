@@ -1,11 +1,11 @@
-import { apiClient } from '../api';
+import { apiClient } from '@ddd3/api-contract';
 import type {
   Post,
   PostCreateRequest,
   PostUpdateRequest,
   PostListResponse,
   PostSearchRequest,
-} from '../types';
+} from '@ddd3/types';
 
 interface ApiResponse<T> {
   success: boolean;

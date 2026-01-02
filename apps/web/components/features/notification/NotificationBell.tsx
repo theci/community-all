@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { notificationService } from '@/lib/services';
 import { useAuth } from '@/lib/hooks';
-import { Badge } from '@/components/ui';
+import { Badge } from '@ddd3/design-system';
 import NotificationList from './NotificationList';
 
 export default function NotificationBell() {

@@ -8,9 +8,9 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { postService } from '@/lib/services';
-import { Post } from '@/lib/types';
+import { Post } from '@ddd3/types';
 import { useAuth } from '@/lib/hooks';
-import { Button, Modal } from '@/components/ui';
+import { Button, Modal } from '@ddd3/design-system';
 import { CommentList } from '@/components/features/comment';
 
 export default function PostDetailPage() {

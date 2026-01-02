@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks';
 import { scrapService } from '@/lib/services';
-import { Card, Button, Input, Modal } from '@/components/ui';
-import type { ScrapFolder, PostScrap } from '@/lib/types';
+import { Card, Button, Input, Modal } from '@ddd3/design-system';
+import type { ScrapFolder, PostScrap } from '@ddd3/types';
 
 export default function ScrapsPage() {
   const router = useRouter();

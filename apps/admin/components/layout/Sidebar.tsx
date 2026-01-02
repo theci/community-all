@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { postService } from '@/lib/services';
-import type { Post, Category } from '@/lib/types';
+import type { Post, Category } from '@ddd3/types';
 
 export default function Sidebar() {
   const [popularPosts, setPopularPosts] = useState<Post[]>([]);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Comment } from '@/lib/types';
+import { Comment } from '@ddd3/types';
 import { commentService } from '@/lib/services';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';

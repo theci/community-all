@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { notificationService } from '@/lib/services';
 import { useAuth } from '@/lib/hooks';
-import { Button } from '@/components/ui';
-import type { Notification } from '@/lib/types';
+import { Button } from '@ddd3/design-system';
+import type { Notification } from '@ddd3/types';
 import NotificationItem from './NotificationItem';
 
 interface NotificationListProps {

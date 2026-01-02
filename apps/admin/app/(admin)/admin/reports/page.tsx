@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { adminService } from '@/lib/services';
 import { useAuth } from '@/lib/hooks';
-import type { Report, ReportDetail } from '@/lib/types';
-import { Button, Modal } from '@/components/ui';
+import type { Report, ReportDetail } from '@ddd3/types';
+import { Button, Modal } from '@ddd3/design-system';
 
 export default function ReportsManagementPage() {
   const { user } = useAuth();

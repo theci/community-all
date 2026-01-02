@@ -4,7 +4,7 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks';
-import { Button, Input, Card } from '@/components/ui';
+import { Button, Input, Card } from '@ddd3/design-system';
 import { validateEmail, validatePassword, validateUsername } from '@/lib/utils';
 
 export default function RegisterPage() {

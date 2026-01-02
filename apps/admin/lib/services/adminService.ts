@@ -1,4 +1,4 @@
-import { apiClient } from '../api';
+import { apiClient } from '@ddd3/api-contract';
 import type {
   AdminStatistics,
   RoleStatistics,
@@ -19,7 +19,7 @@ import type {
   UpdatePostStatusRequest,
   MarkAsNoticeRequest,
   BulkPostActionRequest,
-} from '../types';
+} from '@ddd3/types';
 
 interface ApiResponse<T> {
   success: boolean;

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
 import { useAuthStore } from '@/lib/store/authStore';
 import { NotificationBell } from '@/components/features/notification';
-import { ThemeToggle } from '@/components/ui';
+import { ThemeToggle } from '@ddd3/design-system';
 
 export default function Header() {
   const router = useRouter();

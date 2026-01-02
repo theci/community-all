@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { Button } from '@/components/ui';
+import { Button } from '@ddd3/design-system';
 
 interface CommentFormProps {
   onSubmit: (content: string) => Promise<void>;

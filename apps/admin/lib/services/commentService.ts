@@ -1,5 +1,5 @@
-import { apiClient } from '../api';
-import type { Comment, CommentCreateRequest, CommentUpdateRequest } from '../types';
+import { apiClient } from '@ddd3/api-contract';
+import type { Comment, CommentCreateRequest, CommentUpdateRequest } from '@ddd3/types';
 
 interface ApiResponse<T> {
   success: boolean;

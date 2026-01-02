@@ -4,8 +4,8 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { postService } from '@/lib/services';
-import { Input, Select, Button, Badge } from '@/components/ui';
-import type { Post, Category } from '@/lib/types';
+import { Input, Select, Button, Badge } from '@ddd3/design-system';
+import type { Post, Category } from '@ddd3/types';
 
 const SEARCH_HISTORY_KEY = 'search_history';
 const MAX_HISTORY = 10;
