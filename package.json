@@ -1,0 +1,16 @@
+{
+  "name": "ddd3",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/web\" --filter \"./apps/admin\" dev",
+    "dev:web": "pnpm --filter @ddd3/web dev",
+    "dev:admin": "pnpm --filter @ddd3/admin dev",
+    "build": "pnpm --filter \"./apps/**\" build",
+    "build:web": "pnpm --filter @ddd3/web build",
+    "build:admin": "pnpm --filter @ddd3/admin build"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

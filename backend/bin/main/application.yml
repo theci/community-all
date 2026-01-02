@@ -1,0 +1,211 @@
+spring:
+  application:
+    name: community-platform
+
+  profiles:
+    active: local
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 200MB
+      file-size-threshold: 2KB
+
+  datasource:
+    url: jdbc:h2:mem:community;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        use_sql_comments: true
+        batch_fetch_size: 100
+    show-sql: true
+    open-in-view: false
+    
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      
+  data:
+    redis:
+      host: clustercfg.test.mxcsbc.apn2.cache.amazonaws.com
+      port: 6379
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600s
+
+  cloud:
+    aws:
+      s3:
+        bucket: test-airgateway
+        region: ap-northeast-2
+      credentials:
+        instance-profile: true  # EC2 인스턴스 프로파일 사용
+      region:
+        static: ap-northeast-2
+
+# JWT 설정
+jwt:
+  secret: mySecretKeyForJWTTokenGenerationThatIsLongEnoughForHS512AlgorithmSecurity
+  access-token-validity-in-seconds: 3600      # 1시간
+  refresh-token-validity-in-seconds: 1209600  # 14일
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+logging:
+  level:
+    com.community.platform: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# 커뮤니티 플랫폼 커스텀 설정
+community:
+  file:
+    storage:
+      type: s3  # s3 또는 local
+      enabled: true
+    s3:
+      bucket: test-airgateway
+      prefix: posts/attachments  # S3 저장 경로 prefix
+    upload-dir: /app/uploads/posts  # local 저장 시 사용
+    allowed-image-types: jpg,jpeg,png,gif,webp
+    allowed-video-types: mp4,avi,mov,wmv
+    max-image-size: 10485760  # 10MB
+    max-video-size: 104857600  # 100MB
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+      
+  datasource:
+    url: jdbc:postgresql://localhost:5432/community_platform
+    username: ${DB_USERNAME:community}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    
+  h2:
+    console:
+      enabled: false
+      
+logging:
+  level:
+    com.community.platform: INFO
+    org.hibernate.SQL: WARN
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true  # Docker 컨테이너에서 접근 허용
+
+  data:
+    redis:
+      host: clustercfg.test.mxcsbc.apn2.cache.amazonaws.com
+      port: 6379
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  cache:
+    type: redis  # Redis 연결 문제로 임시 비활성화
+
+  cloud:
+    aws:
+      s3:
+        bucket: test-airgateway
+        region: ap-northeast-2
+      credentials:
+        instance-profile: true
+      region:
+        static: ap-northeast-2
+
+# Docker 환경용 JWT 설정
+jwt:
+  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationThatIsLongEnoughForHS512AlgorithmSecurity}
+  access-token-validity-in-seconds: 3600
+  refresh-token-validity-in-seconds: 1209600
+
+server:
+  port: 8080
+  servlet:
+    context-path:
+
+logging:
+  level:
+    com.community.platform: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

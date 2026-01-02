@@ -1,0 +1,73 @@
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ddd3-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JWT_SECRET=mySecretKeyForJWTTokenGenerationThatIsLongEnoughForHS512AlgorithmSecurity
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_H2_CONSOLE_ENABLED=true
+      - LOGGING_LEVEL_COM_COMMUNITY_PLATFORM=DEBUG
+      - SPRING_DATA_REDIS_HOST=test-0001-001.test.mxcsbc.apn2.cache.amazonaws.com
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_DATA_REDIS_SSL_ENABLED=false
+    volumes:
+      - ./backend/logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - ddd3-network
+
+  # Web Frontend
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: ddd3-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
+    command: ["node", "server.js"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ddd3-network
+
+  # Admin Frontend
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    container_name: ddd3-admin
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
+    command: ["node", "server.js"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ddd3-network
+
+networks:
+  ddd3-network:
+    driver: bridge

@@ -1,0 +1,109 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.hibernate.orm' version '6.4.1.Final'
+    id 'org.graalvm.buildtools.native' version '0.9.28'
+}
+
+group = 'com.community'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    
+    // Database
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    
+    // Utilities
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    // Mapping
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    
+    // JSON
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // AWS S3
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.0.3'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// MapStruct와 Lombok이 함께 작동하도록 설정
+tasks.withType(JavaCompile) {
+    options.compilerArgs += [
+        '-Amapstruct.defaultComponentModel=spring',
+        '-Amapstruct.unmappedTargetPolicy=IGNORE'
+    ]
+}
+
+// 컴파일 에러가 있는 파일들 임시 제외
+tasks.named('compileJava') {
+    // 좋아요 기능 활성화 (2025-12-22)
+    // exclude '**/engagement/presentation/web/PostLikeController.java'
+    // 스크랩 기능 활성화 (2025-12-22)
+    // exclude '**/engagement/presentation/web/PostScrapController.java'
+    // exclude '**/engagement/presentation/web/ScrapFolderController.java'
+    // 댓글 관리 기능 활성화 (2025-12-22)
+    // exclude '**/content/presentation/web/CommentController.java'
+    // exclude '**/content/application/CommentService.java'
+    // 게시글 관리 기능 활성화 (2025-12-22)
+    // exclude '**/content/presentation/web/PostController.java'
+    // exclude '**/content/application/PostService.java'
+    // exclude '**/content/infrastructure/persistence/PostRepositoryImpl.java'
+}
+
+hibernate {
+    enhancement {
+        enableAssociationManagement = true
+    }
+}

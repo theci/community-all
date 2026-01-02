@@ -1,0 +1,16 @@
+{
+  "name": "@community/shared",
+  "version": "1.0.0",
+  "description": "Shared types, utilities, and constants for Community Platform",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["community", "shared", "types", "utils"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
