@@ -98,12 +98,12 @@ export default function AdminLayout({
             </div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
-              <Link
-                href="/"
+              <a
+                href="http://3.39.36.234:3000/"
                 className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
               >
                 메인으로 돌아가기
-              </Link>
+              </a>
             </div>
           </div>
         </div>
