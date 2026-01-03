@@ -1,56 +1,115 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { postService, categoryService } from '@/lib/services';
 import { Post, Category } from '@/lib/types';
-import { PostCard } from '@/components/features/post/PostCard';
-import { Button } from '@/components/ui';
-import Link from 'next/link';
 
-export default function PostsPage() {
+// 모바일 포스트 카드
+function MobilePostCard({ post }: { post: Post }) {
+  return (
+    <Link href={`/posts/${post.id}`} className="block bg-white dark:bg-gray-900 active:bg-gray-50 dark:active:bg-gray-800 transition-colors">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+        {/* 작성자 정보 */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+            {post.author?.nickname?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          <div className="flex-1">
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              {post.author?.nickname || '익명'}
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              {new Date(post.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+            </div>
+          </div>
+          {post.category && (
+            <span className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+              {post.category.name}
+            </span>
+          )}
+        </div>
+
+        {/* 제목 & 내용 */}
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+          {post.title}
+        </h3>
+        {post.summary && (
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+            {post.summary}
+          </p>
+        )}
+
+        {/* 상호작용 버튼 */}
+        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-1">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <span>{post.likeCount}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span>{post.commentCount}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span>{post.viewCount}</span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export default function MobilePostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'trending'>('latest');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [showSearch, setShowSearch] = useState(false);
 
-  const loadPosts = async (currentPage: number, sort: string, keyword?: string, categoryId?: number | null) => {
+  const loadPosts = async (currentPage: number, sort: string, keyword?: string, categoryId?: number | null, append = false) => {
     try {
       setLoading(true);
       setError(null);
 
       let response;
 
-      // 검색 또는 카테고리 필터가 있는 경우
       if (keyword || categoryId) {
         if (keyword) {
           response = await postService.searchPosts({ keyword, categoryId: categoryId || undefined }, currentPage, 20);
         } else if (categoryId) {
-          // 카테고리별 조회는 별도 엔드포인트 사용 예정
           response = await postService.getPosts(currentPage, 20, 'createdAt,desc');
-          // TODO: 카테고리별 조회 API 구현
         }
-        setPosts(response?.content || []);
-        setTotalPages(response?.pageInfo?.totalPages || 0);
+        const newPosts = response?.content || [];
+        setPosts(append ? [...posts, ...newPosts] : newPosts);
+        setHasMore(newPosts.length === 20);
       } else {
-        // 일반 목록 조회
         if (sort === 'latest') {
           response = await postService.getPosts(currentPage, 20, 'createdAt,desc');
-          setPosts(response?.content || []);
-          setTotalPages(response?.pageInfo?.totalPages || 0);
+          const newPosts = response?.content || [];
+          setPosts(append ? [...posts, ...newPosts] : newPosts);
+          setHasMore(newPosts.length === 20);
         } else if (sort === 'popular') {
           const popularPosts = await postService.getPopularPosts(20);
           setPosts(popularPosts || []);
-          setTotalPages(1);
+          setHasMore(false);
         } else if (sort === 'trending') {
-          const trendingPosts = await postService.getTrendingPosts(7);
+          const trendingPosts = await postService.getTrendingPosts(20);
           setPosts(trendingPosts || []);
-          setTotalPages(1);
+          setHasMore(false);
         }
       }
     } catch (err: any) {
@@ -67,8 +126,8 @@ export default function PostsPage() {
   }, []);
 
   useEffect(() => {
-    loadPosts(page, sortBy, searchKeyword, selectedCategory);
-  }, [page, sortBy, searchKeyword, selectedCategory]);
+    loadPosts(0, sortBy, searchKeyword, selectedCategory);
+  }, [sortBy, searchKeyword, selectedCategory]);
 
   const loadCategories = async () => {
     try {
@@ -88,6 +147,7 @@ export default function PostsPage() {
     e.preventDefault();
     setSearchKeyword(searchInput);
     setPage(0);
+    setShowSearch(false);
   };
 
   const handleCategoryChange = (categoryId: number | null) => {
@@ -95,194 +155,187 @@ export default function PostsPage() {
     setPage(0);
   };
 
-  const handlePreviousPage = () => {
-    if (page > 0) {
-      setPage(page - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (page < totalPages - 1) {
-      setPage(page + 1);
-    }
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    loadPosts(nextPage, sortBy, searchKeyword, selectedCategory, true);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* 헤더 */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">게시판</h1>
-          <Link href="/posts/create">
-            <Button className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
-              글쓰기
-            </Button>
-          </Link>
-        </div>
-
-        {/* 검색 및 필터 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* 검색 바 */}
-            <form onSubmit={handleSearch} className="flex-1">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="게시글 검색..."
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <Button type="submit" className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
-                  검색
-                </Button>
-              </div>
-            </form>
-
-            {/* 카테고리 필터 */}
-            <select
-              value={selectedCategory || ''}
-              onChange={(e) => handleCategoryChange(e.target.value ? Number(e.target.value) : null)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <div className="min-h-screen bg-gray-50 dark:bg-black">
+      {/* 상단 헤더 */}
+      <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between px-4 py-3">
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">게시판</h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
-              <option value="">전체 카테고리</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+            <Link
+              href="/posts/create"
+              className="p-2 bg-blue-600 text-white rounded-lg active:bg-blue-700 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </Link>
           </div>
         </div>
 
-        {/* 정렬 옵션 */}
-        <div className="flex gap-2 mb-6">
+        {/* 검색 바 (토글) */}
+        {showSearch && (
+          <div className="px-4 pb-3">
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="게시글 검색..."
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg active:bg-blue-700 transition-colors font-medium"
+              >
+                검색
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* 정렬 & 카테고리 */}
+      <div className="sticky top-[57px] z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        {/* 정렬 버튼 */}
+        <div className="flex gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <button
             onClick={() => handleSortChange('latest')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
               sortBy === 'latest'
-                ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
             }`}
           >
             최신순
           </button>
           <button
             onClick={() => handleSortChange('popular')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
               sortBy === 'popular'
-                ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
             }`}
           >
-            인기순
+            🔥 인기순
           </button>
           <button
             onClick={() => handleSortChange('trending')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
               sortBy === 'trending'
-                ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
             }`}
           >
-            트렌딩
+            ⚡ 트렌딩
           </button>
         </div>
 
-        {/* 로딩 상태 */}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        {/* 카테고리 칩 */}
+        <div className="overflow-x-auto hide-scrollbar">
+          <div className="flex gap-2 px-4 py-3">
+            <button
+              onClick={() => handleCategoryChange(null)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                selectedCategory === null
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              전체
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  selectedCategory === category.id
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* 에러 상태 */}
-        {error && !loading && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
+      {/* 게시글 목록 */}
+      <div className="bg-white dark:bg-gray-900">
+        {loading && posts.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+          </div>
+        ) : error && posts.length === 0 ? (
+          <div className="p-4 m-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg">
             {error}
           </div>
-        )}
-
-        {/* 게시글 목록 */}
-        {!loading && !error && posts && (
+        ) : posts.length === 0 ? (
+          <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+            <svg className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            <p className="mb-4">게시글이 없습니다</p>
+            <Link
+              href="/posts/create"
+              className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg active:bg-blue-700 transition-colors font-medium"
+            >
+              첫 게시글 작성하기
+            </Link>
+          </div>
+        ) : (
           <>
-            {posts.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 dark:text-gray-400 mb-4">아직 작성된 게시글이 없습니다.</p>
-                <Link href="/posts/create">
-                  <Button className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
-                    첫 게시글 작성하기
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
+            {posts.map((post) => (
+              <MobilePostCard key={post.id} post={post} />
+            ))}
+
+            {/* 더보기 버튼 */}
+            {hasMore && !loading && (
+              <div className="p-4">
+                <button
+                  onClick={handleLoadMore}
+                  className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium active:bg-gray-200 dark:active:bg-gray-700 transition-colors"
+                >
+                  더보기
+                </button>
               </div>
             )}
 
-            {/* 페이지네이션 */}
-            {totalPages > 1 && posts.length > 0 && (
-              <div className="flex items-center justify-center gap-2 mt-8">
-                <button
-                  onClick={handlePreviousPage}
-                  disabled={page === 0}
-                  className={`px-4 py-2 rounded-lg border ${
-                    page === 0
-                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border-gray-300 dark:border-gray-700'
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  이전
-                </button>
-
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i;
-                    } else if (page < 3) {
-                      pageNum = i;
-                    } else if (page > totalPages - 4) {
-                      pageNum = totalPages - 5 + i;
-                    } else {
-                      pageNum = page - 2 + i;
-                    }
-
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`px-4 py-2 rounded-lg ${
-                          page === pageNum
-                            ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        {pageNum + 1}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={handleNextPage}
-                  disabled={page >= totalPages - 1}
-                  className={`px-4 py-2 rounded-lg border ${
-                    page >= totalPages - 1
-                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border-gray-300 dark:border-gray-700'
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  다음
-                </button>
+            {/* 로딩 중 (더보기) */}
+            {loading && posts.length > 0 && (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             )}
           </>
         )}
       </div>
+
+      <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
