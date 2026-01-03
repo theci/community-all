@@ -16,9 +16,9 @@ export function usePosts(page = 0, size = 20, sort = 'createdAt,desc') {
 
   return {
     posts: data?.content || [],
-    totalPages: data?.totalPages || 0,
-    totalElements: data?.totalElements || 0,
-    currentPage: data?.currentPage || 0,
+    totalPages: data?.pageInfo?.totalPages || 0,
+    totalElements: data?.pageInfo?.totalElements || 0,
+    currentPage: data?.pageInfo?.currentPage || 0,
     isLoading,
     isError: error,
     mutate,
@@ -47,8 +47,8 @@ export function useSearchPosts(params: PostSearchRequest, page = 0, size = 20) {
 
   return {
     posts: data?.content || [],
-    totalPages: data?.totalPages || 0,
-    totalElements: data?.totalElements || 0,
+    totalPages: data?.pageInfo?.totalPages || 0,
+    totalElements: data?.pageInfo?.totalElements || 0,
     isLoading,
     isError: error,
     mutate,

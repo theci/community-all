@@ -36,11 +36,11 @@ export default function Sidebar() {
 
   // 임시 카테고리 데이터 (추후 API 연동)
   const categories: Category[] = [
-    { id: 1, name: '공지사항', slug: 'notice', description: '공지사항', postCount: 0, displayOrder: 1, isActive: true, createdAt: '', updatedAt: '' },
-    { id: 2, name: '자유게시판', slug: 'free', description: '자유게시판', postCount: 0, displayOrder: 2, isActive: true, createdAt: '', updatedAt: '' },
-    { id: 3, name: '질문답변', slug: 'qna', description: '질문답변', postCount: 0, displayOrder: 3, isActive: true, createdAt: '', updatedAt: '' },
-    { id: 4, name: '개발', slug: 'dev', description: '개발', postCount: 0, displayOrder: 4, isActive: true, createdAt: '', updatedAt: '' },
-    { id: 5, name: '디자인', slug: 'design', description: '디자인', postCount: 0, displayOrder: 5, isActive: true, createdAt: '', updatedAt: '' },
+    { id: 1, name: '공지사항', slug: 'notice', description: '공지사항' },
+    { id: 2, name: '자유게시판', slug: 'free', description: '자유게시판' },
+    { id: 3, name: '질문답변', slug: 'qna', description: '질문답변' },
+    { id: 4, name: '개발', slug: 'dev', description: '개발' },
+    { id: 5, name: '디자인', slug: 'design', description: '디자인' },
   ];
 
   // 인기 태그 (추후 API 연동)

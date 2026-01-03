@@ -1,14 +1,20 @@
 {
-  "name": "community-platform-frontend",
-  "version": "0.1.0",
+  "name": "@ddd3/mobile-app",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
-    "start": "next start -p 3000",
+    "start": "next start -p 3001",
     "lint": "next lint"
   },
   "dependencies": {
+    "@ddd3/design-system": "workspace:*",
+    "@ddd3/api-contract": "workspace:*",
+    "@ddd3/types": "workspace:*",
+    "@ddd3/native-bridge": "workspace:*",
+    "@ddd3/shared-hooks": "workspace:*",
+    "@ddd3/mobile-ui": "workspace:*",
     "axios": "^1.7.9",
     "next": "^15.1.0",
     "react": "^19.0.0",

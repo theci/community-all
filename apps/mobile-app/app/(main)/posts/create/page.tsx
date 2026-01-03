@@ -480,8 +480,13 @@ export default function CreatePostPage() {
                           // 커스텀 이미지 렌더러: 유효한 URL만 렌더링
                           img: ({ node, src, alt, ...props }) => {
                             // src가 없거나 빈 문자열이면 렌더링하지 않음
-                            if (!src || src.trim() === '') {
+                            if (!src || (typeof src === 'string' && src.trim() === '')) {
                               return <span className="text-red-500">[이미지 URL 없음: {alt}]</span>;
+                            }
+
+                            // src가 Blob이면 처리하지 않음
+                            if (typeof src !== 'string') {
+                              return <span className="text-red-500">[잘못된 이미지 형식]</span>;
                             }
 
                             // temp: URL이면 로컬 blob URL로 교체해서 미리보기

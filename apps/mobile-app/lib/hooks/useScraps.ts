@@ -2,6 +2,7 @@
 
 import useSWR from 'swr';
 import { scrapService } from '../services';
+import { useAuthStore } from '../store/authStore';
 import type { ScrapFolder, PostScrap } from '../types';
 
 export function useScrapFolders() {
@@ -19,9 +20,12 @@ export function useScrapFolders() {
 }
 
 export function useScrapFolder(folderId: number | null) {
+  const user = useAuthStore((state) => state.user);
+  const currentUserId = user?.id || 0;
+
   const { data, error, isLoading, mutate } = useSWR<ScrapFolder>(
     folderId ? `/scrap-folders/${folderId}` : null,
-    folderId ? () => scrapService.getFolder(folderId) : null
+    folderId ? () => scrapService.getFolder(folderId, currentUserId) : null
   );
 
   return {
@@ -33,9 +37,12 @@ export function useScrapFolder(folderId: number | null) {
 }
 
 export function useScrapsInFolder(folderId: number | null) {
+  const user = useAuthStore((state) => state.user);
+  const currentUserId = user?.id || 0;
+
   const { data, error, isLoading, mutate } = useSWR<PostScrap[]>(
     folderId ? `/posts/scrap-folders/${folderId}/scraps` : null,
-    folderId ? () => scrapService.getScrapsInFolder(folderId) : null
+    folderId ? () => scrapService.getScrapsInFolder(folderId, currentUserId) : null
   );
 
   return {

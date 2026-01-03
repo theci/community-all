@@ -84,6 +84,24 @@ importers:
 
   apps/mobile-app:
     dependencies:
+      '@ddd3/api-contract':
+        specifier: workspace:*
+        version: link:../../packages/api-contract
+      '@ddd3/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
+      '@ddd3/mobile-ui':
+        specifier: workspace:*
+        version: link:../../packages/mobile-ui
+      '@ddd3/native-bridge':
+        specifier: workspace:*
+        version: link:../../packages/native-bridge
+      '@ddd3/shared-hooks':
+        specifier: workspace:*
+        version: link:../../packages/shared-hooks
+      '@ddd3/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       axios:
         specifier: ^1.7.9
         version: 1.13.2
