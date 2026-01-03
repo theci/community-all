@@ -1,0 +1,14 @@
+{
+  "name": "@ddd3/native-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^22"
+  }
+}

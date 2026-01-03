@@ -5,3 +5,6 @@ packages:
   - 'packages/types'
   - 'packages/design-system'
   - 'packages/utils'
+  - 'packages/native-bridge'
+  - 'packages/shared-hooks'
+  - 'packages/mobile-ui'

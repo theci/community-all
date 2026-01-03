@@ -251,8 +251,61 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/mobile-ui:
+    dependencies:
+      '@ddd3/shared-hooks':
+        specifier: workspace:*
+        version: link:../shared-hooks
+      next:
+        specifier: ^15.0.0
+        version: 15.5.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.3(react@19.2.3)
+      tailwindcss:
+        specifier: ^3.4.1
+        version: 3.4.19
+    devDependencies:
+      '@types/react':
+        specifier: ^19
+        version: 19.2.7
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/native-bridge:
+    devDependencies:
+      '@types/node':
+        specifier: ^22
+        version: 22.19.3
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/shared:
     devDependencies:
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/shared-hooks:
+    dependencies:
+      '@ddd3/native-bridge':
+        specifier: workspace:*
+        version: link:../native-bridge
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@types/react':
+        specifier: ^19
+        version: 19.2.7
       typescript:
         specifier: ^5
         version: 5.9.3
