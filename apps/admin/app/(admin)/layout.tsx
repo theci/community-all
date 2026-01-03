@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
 import { useAuthStore } from '@/lib/store/authStore';
 import Link from 'next/link';
 import { ThemeToggle } from '@ddd3/design-system';
+import { TokenHandler } from './TokenHandler';
 
 export default function AdminLayout({
   children,
@@ -13,23 +14,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading } = useAuth();
   const setUser = useAuthStore((state) => state.setUser);
-
-  // URL 파라미터에서 토큰 받아서 저장
-  useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      localStorage.setItem('accessToken', token);
-      // URL에서 token 파라미터 제거
-      const url = new URL(window.location.href);
-      url.searchParams.delete('token');
-      window.history.replaceState({}, '', url.toString());
-      // 페이지 새로고침해서 인증 상태 반영
-      window.location.reload();
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -61,6 +47,9 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Suspense fallback={null}>
+        <TokenHandler />
+      </Suspense>
       {/* Admin Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

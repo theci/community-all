@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Middleware for mobile-app
+ * Middleware for web app
  * Handles device-based redirects
  */
 export function middleware(request: NextRequest) {
@@ -28,17 +28,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Mobile accessing m. domain: OK
-  // PC accessing m. domain: redirect to www.
-  if (!isMobile && host.startsWith('m.')) {
+  // PC accessing www. domain: OK
+  // Mobile accessing www. domain: redirect to m.
+  if (isMobile && (host.startsWith('www.') || !host.includes('m.'))) {
     const url = request.nextUrl.clone();
-    url.host = host.replace('m.', 'www.');
+    const newHost = host.startsWith('www.')
+      ? host.replace('www.', 'm.')
+      : 'm.' + host;
+    url.host = newHost;
 
     return NextResponse.redirect(url, {
-      status: 301, // Permanent redirect
-      headers: {
-        'Cache-Control': 'public, max-age=3600'
-      }
+      status: 302, // Temporary redirect (mobile app install prompt possible)
     });
   }
 

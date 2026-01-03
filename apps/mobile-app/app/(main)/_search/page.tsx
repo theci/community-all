@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { postService } from '@/lib/services';
@@ -11,6 +11,7 @@ const SEARCH_HISTORY_KEY = 'search_history';
 const MAX_HISTORY = 10;
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();

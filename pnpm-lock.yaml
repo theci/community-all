@@ -169,6 +169,12 @@ importers:
       '@ddd3/design-system':
         specifier: workspace:*
         version: link:../../packages/design-system
+      '@ddd3/native-bridge':
+        specifier: workspace:*
+        version: link:../../packages/native-bridge
+      '@ddd3/shared-hooks':
+        specifier: workspace:*
+        version: link:../../packages/shared-hooks
       '@ddd3/types':
         specifier: workspace:*
         version: link:../../packages/types

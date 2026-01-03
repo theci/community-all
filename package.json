@@ -1,14 +1,18 @@
 {
-  "name": "ddd3",
+  "name": "ddd3-monorepo",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --parallel --filter \"./apps/web\" --filter \"./apps/admin\" dev",
+    "dev": "pnpm --parallel --filter \"./apps/web\" --filter \"./apps/mobile-app\" --filter \"./apps/admin\" dev",
     "dev:web": "pnpm --filter @ddd3/web dev",
+    "dev:mobile": "pnpm --filter @ddd3/mobile-app dev",
     "dev:admin": "pnpm --filter @ddd3/admin dev",
     "build": "pnpm --filter \"./apps/**\" build",
     "build:web": "pnpm --filter @ddd3/web build",
-    "build:admin": "pnpm --filter @ddd3/admin build"
+    "build:mobile": "pnpm --filter @ddd3/mobile-app build",
+    "build:admin": "pnpm --filter @ddd3/admin build",
+    "test": "pnpm --filter \"./packages/**\" --filter \"./apps/**\" test",
+    "lint": "pnpm --filter \"./apps/**\" lint"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

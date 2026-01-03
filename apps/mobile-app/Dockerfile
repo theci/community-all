@@ -1,54 +1,60 @@
-# Multi-stage build for optimized production image
 FROM node:20-alpine AS base
+RUN npm install -g pnpm
 
-# Install dependencies only when needed
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
-RUN npm install
+# Copy workspace configuration
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 
-# Rebuild the source code only when needed
+# Copy all package.json files for workspace packages
+COPY packages/design-system/package.json ./packages/design-system/
+COPY packages/api-contract/package.json ./packages/api-contract/
+COPY packages/types/package.json ./packages/types/
+COPY packages/native-bridge/package.json ./packages/native-bridge/
+COPY packages/shared-hooks/package.json ./packages/shared-hooks/
+COPY packages/mobile-ui/package.json ./packages/mobile-ui/
+COPY apps/mobile-app/package.json ./apps/mobile-app/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
 FROM base AS builder
 WORKDIR /app
+
+# Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
 
-# Build arguments for environment variables
-ARG NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+# Copy workspace packages source code
+COPY packages ./packages
 
-# Environment variables for build
+# Copy mobile-app source code
+COPY apps/mobile-app ./apps/mobile-app
+
+# Copy workspace configuration
+COPY pnpm-workspace.yaml package.json ./
+
+ARG NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
-# Build application
-RUN npm run build
+WORKDIR /app/apps/mobile-app
+RUN pnpm build
 
-# Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-# Set correct permissions
-RUN chown -R nextjs:nodejs /app
+COPY --from=builder --chown=nextjs:nodejs /app ./
 
 USER nextjs
-
-EXPOSE 3000
-
-ENV PORT=3000
+WORKDIR /app/apps/mobile-app
+EXPOSE 3001
+ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "server.js"]
+CMD ["npx", "next", "start"]

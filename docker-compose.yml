@@ -41,7 +41,24 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
-    command: ["node", "server.js"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ddd3-network
+
+  # Mobile Web Frontend
+  mobile-app:
+    build:
+      context: .
+      dockerfile: apps/mobile-app/Dockerfile
+    container_name: ddd3-mobile-app
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
     depends_on:
       backend:
         condition: service_healthy
@@ -60,7 +77,6 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
-    command: ["node", "server.js"]
     depends_on:
       backend:
         condition: service_healthy
