@@ -39,9 +39,8 @@ function MobileHeader() {
 }
 
 // 카테고리 칩 (가로 스크롤)
-function CategoryChips() {
-  const categories = ['전체', '🔥 인기', '⚡ 트렌딩', '💻 기술', '📱 모바일', '🎨 디자인', '💼 비즈니스'];
-  const [selected, setSelected] = useState('전체');
+function CategoryChips({ selected, onSelect }: { selected: string; onSelect: (category: string) => void }) {
+  const categories = ['전체', '🔥 인기', '⚡ 트렌딩'];
 
   return (
     <div className="overflow-x-auto hide-scrollbar bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
@@ -49,7 +48,7 @@ function CategoryChips() {
         {categories.map((category) => (
           <button
             key={category}
-            onClick={() => setSelected(category)}
+            onClick={() => onSelect(category)}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
               selected === category
                 ? 'bg-blue-600 text-white shadow-md'
@@ -146,39 +145,54 @@ function PostCardSkeleton() {
 
 export default function MobileHome() {
   const { isAuthenticated } = useAuth();
-  const [popularPosts, setPopularPosts] = useState<Post[]>([]);
-  const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('전체');
 
   useEffect(() => {
-    loadPosts();
-  }, []);
+    loadPosts(selectedCategory);
+  }, [selectedCategory]);
 
-  const loadPosts = async () => {
+  const loadPosts = async (category: string) => {
     try {
       setLoading(true);
-      const [popular, trending] = await Promise.all([
-        postService.getPopularPosts(10),
-        postService.getTrendingPosts(10),
-      ]);
+      let result: Post[] = [];
 
-      setPopularPosts(Array.isArray(popular) ? popular : []);
-      setTrendingPosts(Array.isArray(trending) ? trending : []);
+      if (category === '전체') {
+        const [popular, trending] = await Promise.all([
+          postService.getPopularPosts(10),
+          postService.getTrendingPosts(10),
+        ]);
+        // 중복 제거하여 합치기
+        const combined = [...(Array.isArray(popular) ? popular : []), ...(Array.isArray(trending) ? trending : [])];
+        result = combined.filter((post, index, self) =>
+          index === self.findIndex((p) => p.id === post.id)
+        );
+      } else if (category === '🔥 인기') {
+        const popular = await postService.getPopularPosts(20);
+        result = Array.isArray(popular) ? popular : [];
+      } else if (category === '⚡ 트렌딩') {
+        const trending = await postService.getTrendingPosts(20);
+        result = Array.isArray(trending) ? trending : [];
+      }
+
+      setPosts(result);
     } catch (err) {
       console.error('Failed to load posts:', err);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const allPosts = [...popularPosts, ...trendingPosts].filter((post, index, self) =>
-    index === self.findIndex((p) => p.id === post.id)
-  );
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       <MobileHeader />
-      <CategoryChips />
+      <CategoryChips selected={selectedCategory} onSelect={handleCategoryChange} />
 
       {/* 퀵 액션 (로그인 시) */}
       {isAuthenticated && (
@@ -208,9 +222,9 @@ export default function MobileHome() {
               <PostCardSkeleton key={i} />
             ))}
           </div>
-        ) : allPosts.length > 0 ? (
+        ) : posts.length > 0 ? (
           <div>
-            {allPosts.map((post) => (
+            {posts.map((post) => (
               <MobilePostCard key={post.id} post={post} />
             ))}
           </div>
