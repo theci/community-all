@@ -10,6 +10,7 @@ import com.community.platform.messaging.exception.MessageThreadNotFoundException
 import com.community.platform.messaging.exception.UnauthorizedMessageAccessException;
 import com.community.platform.messaging.infrastructure.persistence.MessageRepository;
 import com.community.platform.messaging.infrastructure.persistence.MessageThreadRepository;
+import com.community.platform.shared.infrastructure.DomainEventPublisher;
 import com.community.platform.user.domain.User;
 import com.community.platform.user.exception.UserNotFoundException;
 import com.community.platform.user.infrastructure.persistence.UserRepository;
@@ -35,6 +36,7 @@ public class MessageService {
     private final MessageThreadRepository threadRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
+    private final DomainEventPublisher eventPublisher;
 
     /**
      * 메시지 전송
@@ -53,6 +55,9 @@ public class MessageService {
         // 메시지 생성
         Message message = Message.create(thread, senderId, recipientId, content);
         Message savedMessage = messageRepository.save(message);
+
+        // 도메인 이벤트 발행
+        eventPublisher.publishEvents(savedMessage);
 
         log.info("메시지 전송 완료. messageId: {}", savedMessage.getId());
         return messageMapper.toMessageResponse(savedMessage, sender, recipient, senderId);

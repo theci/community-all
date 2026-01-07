@@ -6,6 +6,7 @@ import com.community.platform.content.infrastructure.persistence.PostRepository;
 import com.community.platform.user.infrastructure.persistence.UserRepository;
 import com.community.platform.content.exception.PostNotFoundException;
 import com.community.platform.user.exception.UserNotFoundException;
+import com.community.platform.shared.infrastructure.DomainEventPublisher;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class PostLikeService {
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final DomainEventPublisher eventPublisher;
 
     /**
      * 게시글 좋아요 추가
@@ -38,23 +40,31 @@ public class PostLikeService {
     @Transactional
     public void addPostLike(Long userId, Long postId) {
         log.info("게시글 좋아요 추가. userId: {}, postId: {}", userId, postId);
-        
+
         // 사용자 및 게시글 존재 확인
         validateUserExists(userId);
         validatePostExists(postId);
-        
+
         // 중복 좋아요 확인
         if (postLikeRepository.existsByUserIdAndPostId(userId, postId)) {
             throw new IllegalStateException("이미 좋아요를 누른 게시글입니다.");
         }
-        
-        // 좋아요 생성
-        PostLike postLike = PostLike.create(postId, userId);
+
+        // 게시글 작성자 ID 조회
+        Long postAuthorId = postRepository.findById(postId)
+            .orElseThrow(() -> new PostNotFoundException(postId))
+            .getAuthorId();
+
+        // 좋아요 생성 (이벤트 발행 포함)
+        PostLike postLike = PostLike.create(postId, userId, postAuthorId);
         postLikeRepository.save(postLike);
-        
+
+        // 도메인 이벤트 발행
+        eventPublisher.publishEvents(postLike);
+
         // 게시글 좋아요 수 증가
         postRepository.incrementLikeCount(postId);
-        
+
         log.info("게시글 좋아요 추가 완료. userId: {}, postId: {}", userId, postId);
     }
 

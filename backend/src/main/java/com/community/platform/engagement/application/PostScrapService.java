@@ -8,6 +8,7 @@ import com.community.platform.content.infrastructure.persistence.PostRepository;
 import com.community.platform.user.infrastructure.persistence.UserRepository;
 import com.community.platform.content.exception.PostNotFoundException;
 import com.community.platform.user.exception.UserNotFoundException;
+import com.community.platform.shared.infrastructure.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ public class PostScrapService {
     private final ScrapFolderRepository scrapFolderRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final DomainEventPublisher eventPublisher;
 
     /**
      * 게시글 스크랩 추가 (기본 폴더에)
@@ -67,11 +69,19 @@ public class PostScrapService {
         if (postScrapRepository.existsByUserIdAndPostId(userId, postId)) {
             throw new IllegalStateException("이미 스크랩한 게시글입니다.");
         }
-        
-        // 스크랩 생성
-        PostScrap postScrap = PostScrap.create(postId, userId, folder);
+
+        // 게시글 작성자 ID 조회
+        Long postAuthorId = postRepository.findById(postId)
+            .orElseThrow(() -> new PostNotFoundException(postId))
+            .getAuthorId();
+
+        // 스크랩 생성 (이벤트 발행 포함)
+        PostScrap postScrap = PostScrap.create(postId, userId, folder, postAuthorId);
         postScrapRepository.save(postScrap);
-        
+
+        // 도메인 이벤트 발행
+        eventPublisher.publishEvents(postScrap);
+
         log.info("게시글 스크랩 추가 완료. userId: {}, postId: {}", userId, postId);
     }
 

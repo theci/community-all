@@ -3,6 +3,7 @@ package com.community.platform.notification.application;
 import com.community.platform.content.domain.CommentCreatedEvent;
 import com.community.platform.engagement.domain.LikeCreatedEvent;
 import com.community.platform.engagement.domain.ScrapCreatedEvent;
+import com.community.platform.messaging.domain.MessageCreatedEvent;
 import com.community.platform.moderation.domain.ReportApprovedEvent;
 import com.community.platform.moderation.domain.ReportRejectedEvent;
 import com.community.platform.moderation.domain.UserPenaltyCreatedEvent;
@@ -13,6 +14,8 @@ import com.community.platform.reward.domain.UserLevelUpEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -32,6 +35,7 @@ public class NotificationEventHandler {
      * - 게시글에 댓글: 게시글 작성자에게 알림
      * - 대댓글: 부모 댓글 작성자에게 알림
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleCommentCreated(CommentCreatedEvent event) {
         log.debug("댓글 생성 이벤트 수신. commentId: {}, postId: {}", event.getCommentId(), event.getPostId());
@@ -67,6 +71,7 @@ public class NotificationEventHandler {
     /**
      * 좋아요 생성 이벤트 처리
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleLikeCreated(LikeCreatedEvent event) {
         log.debug("좋아요 생성 이벤트 수신. likeId: {}, postId: {}", event.getLikeId(), event.getPostId());
@@ -87,6 +92,7 @@ public class NotificationEventHandler {
     /**
      * 스크랩 생성 이벤트 처리
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleScrapCreated(ScrapCreatedEvent event) {
         log.debug("스크랩 생성 이벤트 수신. scrapId: {}, postId: {}", event.getScrapId(), event.getPostId());
@@ -107,6 +113,7 @@ public class NotificationEventHandler {
     /**
      * 신고 승인 이벤트 처리
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleReportApproved(ReportApprovedEvent event) {
         log.debug("신고 승인 이벤트 수신. reportId: {}", event.getReportId());
@@ -124,6 +131,7 @@ public class NotificationEventHandler {
     /**
      * 신고 반려 이벤트 처리
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleReportRejected(ReportRejectedEvent event) {
         log.debug("신고 반려 이벤트 수신. reportId: {}", event.getReportId());
@@ -141,6 +149,7 @@ public class NotificationEventHandler {
     /**
      * 사용자 제재 생성 이벤트 처리
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserPenaltyCreated(UserPenaltyCreatedEvent event) {
         log.debug("사용자 제재 생성 이벤트 수신. penaltyId: {}, userId: {}", event.getPenaltyId(), event.getUserId());
@@ -158,6 +167,7 @@ public class NotificationEventHandler {
     /**
      * 사용자 제재 만료 이벤트 처리
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserPenaltyExpired(UserPenaltyExpiredEvent event) {
         log.debug("사용자 제재 만료 이벤트 수신. penaltyId: {}, userId: {}", event.getPenaltyId(), event.getUserId());
@@ -175,6 +185,7 @@ public class NotificationEventHandler {
     /**
      * 사용자 레벨업 이벤트 처리
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserLevelUp(UserLevelUpEvent event) {
         log.debug("사용자 레벨업 이벤트 수신. userId: {}, newLevel: {}", event.getUserId(), event.getNewLevel());
@@ -188,6 +199,24 @@ public class NotificationEventHandler {
                         event.getTotalPoints()),
                 event.getUserId(),
                 RelatedEntityType.USER
+        );
+    }
+
+    /**
+     * 쪽지 생성 이벤트 처리
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleMessageCreated(MessageCreatedEvent event) {
+        log.debug("쪽지 생성 이벤트 수신. messageId: {}, recipientId: {}", event.getMessageId(), event.getRecipientId());
+
+        notificationService.sendNotification(
+                event.getRecipientId(),
+                NotificationType.MESSAGE_RECEIVED,
+                "새 쪽지",
+                "새로운 쪽지가 도착했습니다",
+                event.getMessageId(),
+                RelatedEntityType.MESSAGE
         );
     }
 }

@@ -56,4 +56,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      */
     @Query("SELECT n FROM Notification n WHERE n.userId = :userId AND n.isRead = false ORDER BY n.createdAt DESC")
     Page<Notification> findUnreadByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * 중복 알림 체크 (같은 사용자, 같은 타입, 같은 관련 엔티티)
+     */
+    @Query("SELECT COUNT(n) > 0 FROM Notification n WHERE n.userId = :userId AND n.type = :type AND n.relatedId = :relatedId")
+    boolean existsByUserIdAndTypeAndRelatedId(@Param("userId") Long userId,
+                                               @Param("type") com.community.platform.notification.domain.NotificationType type,
+                                               @Param("relatedId") Long relatedId);
 }

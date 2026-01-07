@@ -48,6 +48,14 @@ public class NotificationService {
             return;
         }
 
+        // 중복 알림 체크 (좋아요, 스크랩만 체크 - 댓글은 여러 개 받을 수 있음)
+        if (type == NotificationType.LIKE_ON_POST || type == NotificationType.SCRAP_ON_POST) {
+            if (notificationRepository.existsByUserIdAndTypeAndRelatedId(userId, type, relatedId)) {
+                log.debug("이미 발송된 알림이므로 중복 발송하지 않습니다. userId: {}, type: {}, relatedId: {}", userId, type, relatedId);
+                return;
+            }
+        }
+
         // 알림 생성
         Notification notification = Notification.create(
                 userId,

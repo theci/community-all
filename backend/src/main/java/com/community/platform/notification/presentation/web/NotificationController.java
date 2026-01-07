@@ -36,7 +36,7 @@ public class NotificationController {
      * GET /api/v1/notifications
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications(
+    public ResponseEntity<ApiResponse<Page<NotificationResponse>>> getMyNotifications(
             @RequestParam(required = false) Long currentUserId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -48,9 +48,7 @@ public class NotificationController {
         Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notifications = notificationService.getMyNotifications(currentUserId, pageable);
 
-        List<NotificationResponse> responses = notifications.getContent().stream()
-                .map(NotificationResponse::from)
-                .collect(Collectors.toList());
+        Page<NotificationResponse> responses = notifications.map(NotificationResponse::from);
 
         return ResponseEntity.ok(ApiResponse.success(responses));
     }

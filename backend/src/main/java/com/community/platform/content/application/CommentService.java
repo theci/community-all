@@ -7,6 +7,7 @@ import com.community.platform.content.infrastructure.persistence.CommentReposito
 import com.community.platform.content.infrastructure.persistence.PostRepository;
 import com.community.platform.moderation.application.UserPenaltyService;
 import com.community.platform.moderation.exception.UserPenaltyException;
+import com.community.platform.shared.infrastructure.DomainEventPublisher;
 import com.community.platform.user.exception.UserNotFoundException;
 import com.community.platform.user.infrastructure.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final UserPenaltyService penaltyService;
+    private final DomainEventPublisher eventPublisher;
 
     /**
      * 새 댓글 작성
@@ -55,6 +57,9 @@ public class CommentService {
         // 댓글 생성
         Comment comment = Comment.create(post, authorId, content);
         Comment savedComment = commentRepository.save(comment);
+
+        // 도메인 이벤트 발행
+        eventPublisher.publishEvents(savedComment);
 
         log.info("댓글 작성 완료. commentId: {}", savedComment.getId());
         return savedComment;
@@ -86,6 +91,9 @@ public class CommentService {
         // 대댓글 생성
         Comment reply = Comment.createReply(post, parentComment, authorId, content);
         Comment savedReply = commentRepository.save(reply);
+
+        // 도메인 이벤트 발행
+        eventPublisher.publishEvents(savedReply);
 
         log.info("대댓글 작성 완료. replyId: {}", savedReply.getId());
         return savedReply;
