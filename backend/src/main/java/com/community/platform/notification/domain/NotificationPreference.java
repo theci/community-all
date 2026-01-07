@@ -89,6 +89,7 @@ public class NotificationPreference extends BaseEntity {
             case REPLY_ON_COMMENT -> notifyReply;
             case LIKE_ON_POST -> notifyLike;
             case SCRAP_ON_POST -> notifyScrap;
+            case MESSAGE_RECEIVED -> true;  // 쪽지는 항상 수신
             case REPORT_APPROVED, REPORT_REJECTED -> notifyReportResult;
             case LEVEL_UP -> notifyLevelUp;
             case PENALTY_APPLIED, PENALTY_EXPIRED -> notifyPenalty;

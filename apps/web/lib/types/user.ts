@@ -67,3 +67,9 @@ export interface UserWithStats extends User {
   points?: number;
   level?: number;
 }
+
+export interface UserSummary {
+  id: number;
+  nickname: string;
+  profileImageUrl?: string;
+}

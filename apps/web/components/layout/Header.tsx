@@ -66,6 +66,12 @@ export default function Header() {
             {isAuthenticated && (
               <>
                 <Link
+                  href="/messages"
+                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+                >
+                  쪽지함
+                </Link>
+                <Link
                   href="/scraps"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
                 >
@@ -151,6 +157,13 @@ export default function Header() {
                         onClick={() => setShowUserMenu(false)}
                       >
                         내 프로필
+                      </Link>
+                      <Link
+                        href="/messages"
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        쪽지함
                       </Link>
                       <Link
                         href="/profile/edit"
@@ -276,6 +289,13 @@ export default function Header() {
               </Link>
               {isAuthenticated && (
                 <>
+                  <Link
+                    href="/messages"
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    쪽지함
+                  </Link>
                   <Link
                     href="/scraps"
                     className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"

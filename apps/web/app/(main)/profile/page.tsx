@@ -205,12 +205,20 @@ export default function ProfilePage() {
             </div>
 
             {/* 프로필 편집 버튼 */}
-            <Button
-              onClick={() => router.push('/profile/edit')}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-700"
-            >
-              프로필 편집
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => router.push('/messages')}
+                className="bg-blue-100 hover:bg-blue-200 text-blue-700"
+              >
+                쪽지함
+              </Button>
+              <Button
+                onClick={() => router.push('/profile/edit')}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700"
+              >
+                프로필 편집
+              </Button>
+            </div>
           </div>
 
           {/* 통계 및 포인트 */}

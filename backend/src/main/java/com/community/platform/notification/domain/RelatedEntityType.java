@@ -8,6 +8,7 @@ public enum RelatedEntityType {
 
     POST,       // 게시글
     COMMENT,    // 댓글
+    MESSAGE,    // 쪽지
     REPORT,     // 신고
     PENALTY,    // 제재
     USER,       // 사용자

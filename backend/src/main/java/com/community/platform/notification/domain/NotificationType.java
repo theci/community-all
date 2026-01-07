@@ -15,6 +15,7 @@ public enum NotificationType {
     REPLY_ON_COMMENT("댓글에 답글", "회원님의 댓글에 답글이 달렸습니다"),
     LIKE_ON_POST("게시글 좋아요", "회원님의 게시글을 좋아합니다"),
     SCRAP_ON_POST("게시글 스크랩", "회원님의 게시글을 스크랩했습니다"),
+    MESSAGE_RECEIVED("새 쪽지", "새로운 쪽지가 도착했습니다"),
     REPORT_APPROVED("신고 승인", "신고하신 콘텐츠가 삭제되었습니다"),
     REPORT_REJECTED("신고 반려", "신고가 반려되었습니다"),
     PENALTY_APPLIED("제재 통보", "커뮤니티 규칙 위반으로 제재되었습니다"),
