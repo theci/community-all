@@ -220,6 +220,14 @@ export default function PostDetailPage() {
               <span className="text-gray-500 dark:text-gray-400 text-sm">
                 {formatDate(post.createdAt)}
               </span>
+              {!isAuthor && isAuthenticated && (
+                <button
+                  onClick={() => router.push(`/messages/new?recipientId=${post.author.id}&recipientName=${post.author.nickname}`)}
+                  className="text-xs px-2 py-1 bg-blue-500 text-white rounded active:bg-blue-600"
+                >
+                  쪽지
+                </button>
+              )}
             </div>
 
             <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
