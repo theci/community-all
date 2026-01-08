@@ -221,6 +221,7 @@ public class PostController {
 
         Page<Post> posts = postService.searchPostsWithFilters(
             searchRequest.getKeyword(),
+            searchRequest.getSearchType(),
             searchRequest.getCategoryId(),
             searchRequest.getTagNames(),
             searchRequest.getStartDate(),

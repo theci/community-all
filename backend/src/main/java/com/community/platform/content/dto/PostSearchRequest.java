@@ -20,6 +20,8 @@ public class PostSearchRequest {
     @Size(max = 100, message = "검색 키워드는 100자를 초과할 수 없습니다")
     private String keyword; // 검색 키워드
 
+    private String searchType = "ALL"; // 검색 유형 (TITLE, CONTENT, ALL, AUTHOR)
+
     private Long categoryId; // 카테고리 ID 필터
 
     @Size(max = 5, message = "태그 필터는 최대 5개까지 가능합니다")

@@ -15,8 +15,9 @@ import java.util.List;
 public interface PostRepositoryCustom {
 
     // 복합 검색 조건으로 게시글 검색 (제목, 내용, 작성자, 카테고리, 태그 통합 검색)
-    Page<Post> searchPostsWithFilters(String keyword, 
-                                     Long categoryId, 
+    Page<Post> searchPostsWithFilters(String keyword,
+                                     String searchType,
+                                     Long categoryId,
                                      List<String> tagNames,
                                      PostStatus status,
                                      LocalDateTime startDate,

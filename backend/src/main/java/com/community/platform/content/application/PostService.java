@@ -219,11 +219,11 @@ public class PostService {
     /**
      * 복합 조건 게시글 검색 (QueryDSL 활용)
      */
-    public Page<Post> searchPostsWithFilters(String keyword, Long categoryId, 
-                                           List<String> tagNames, LocalDateTime startDate, 
+    public Page<Post> searchPostsWithFilters(String keyword, String searchType, Long categoryId,
+                                           List<String> tagNames, LocalDateTime startDate,
                                            LocalDateTime endDate, Pageable pageable) {
         return postRepository.searchPostsWithFilters(
-                keyword, categoryId, tagNames, PostStatus.PUBLISHED, 
+                keyword, searchType, categoryId, tagNames, PostStatus.PUBLISHED,
                 startDate, endDate, pageable);
     }
 

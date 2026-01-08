@@ -20,6 +20,7 @@ import static com.community.platform.content.domain.QPost.post;
 import static com.community.platform.content.domain.QCategory.category;
 import static com.community.platform.content.domain.QPostTag.postTag;
 import static com.community.platform.content.domain.QTag.tag;
+import static com.community.platform.user.domain.QUser.user;
 
 /**
  * QueryDSL을 사용한 커스텀 Repository 구현체
@@ -32,27 +33,52 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Post> searchPostsWithFilters(String keyword, 
-                                           Long categoryId, 
+    public Page<Post> searchPostsWithFilters(String keyword,
+                                           String searchType,
+                                           Long categoryId,
                                            List<String> tagNames,
                                            PostStatus status,
                                            LocalDateTime startDate,
                                            LocalDateTime endDate,
                                            Pageable pageable) {
-        
+
         BooleanBuilder builder = new BooleanBuilder();
-        
-        // 키워드 검색 조건 (제목과 내용에서 검색)
+
+        // 키워드 검색 조건 (searchType에 따라 다른 조건)
         if (keyword != null && !keyword.trim().isEmpty()) {
-            builder.and(post.title.containsIgnoreCase(keyword)
-                    .or(post.content.containsIgnoreCase(keyword)));
+            BooleanExpression searchCondition = null;
+            String likePattern = "%" + keyword + "%";
+
+            if (searchType == null || "ALL".equalsIgnoreCase(searchType)) {
+                // 제목 + 내용 (MySQL은 기본적으로 case-insensitive)
+                searchCondition = post.title.like(likePattern)
+                        .or(post.content.like(likePattern));
+            } else if ("TITLE".equalsIgnoreCase(searchType)) {
+                // 제목만
+                searchCondition = post.title.like(likePattern);
+            } else if ("CONTENT".equalsIgnoreCase(searchType)) {
+                // 내용만
+                searchCondition = post.content.like(likePattern);
+            } else if ("AUTHOR".equalsIgnoreCase(searchType)) {
+                // 작성자 닉네임으로 검색 (User와 조인)
+                builder.and(post.authorId.in(
+                    queryFactory.select(user.id)
+                        .from(user)
+                        .where(user.nickname.like(likePattern)
+                            .or(user.email.like(likePattern)))
+                ));
+            }
+
+            if (searchCondition != null) {
+                builder.and(searchCondition);
+            }
         }
-        
+
         // 카테고리 필터 조건
         if (categoryId != null) {
             builder.and(post.category.id.eq(categoryId));
         }
-        
+
         // 태그 필터 조건
         if (tagNames != null && !tagNames.isEmpty()) {
             builder.and(post.id.in(
@@ -64,32 +90,32 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                     .having(postTag.count().eq((long) tagNames.size()))
             ));
         }
-        
+
         // 상태 조건
         if (status != null) {
             builder.and(post.status.eq(status));
         }
-        
+
         // 날짜 범위 조건
         if (startDate != null && endDate != null) {
             builder.and(post.publishedAt.between(startDate, endDate));
         }
-        
+
         JPAQuery<Post> query = queryFactory.selectFrom(post)
                 .leftJoin(post.category, category).fetchJoin()
                 .where(builder)
                 .orderBy(post.publishedAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
-        
+
         List<Post> posts = query.fetch();
-        
+
         // 총 개수 조회
         Long total = queryFactory.select(post.count())
                 .from(post)
                 .where(builder)
                 .fetchOne();
-        
+
         return new PageImpl<>(posts, pageable, total != null ? total : 0L);
     }
 
@@ -248,8 +274,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
         builder.and(post.status.eq(status));
         
         if (keyword != null && !keyword.trim().isEmpty()) {
-            builder.and(post.title.containsIgnoreCase(keyword)
-                    .or(post.content.containsIgnoreCase(keyword)));
+            String likePattern = "%" + keyword + "%";
+            builder.and(post.title.like(likePattern)
+                    .or(post.content.like(likePattern)));
         }
         
         JPAQuery<Post> query = queryFactory.selectFrom(post)

@@ -15,6 +15,7 @@ function SearchPageContent() {
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [searchType, setSearchType] = useState(searchParams.get('type') || 'ALL');
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'latest');
   const [startDate, setStartDate] = useState(searchParams.get('startDate') || '');
@@ -99,6 +100,7 @@ function SearchPageContent() {
       // URL 업데이트
       const params = new URLSearchParams();
       params.set('q', searchTerm);
+      if (searchType) params.set('type', searchType);
       if (category) params.set('category', category);
       if (sortBy) params.set('sort', sortBy);
       if (startDate) params.set('startDate', startDate);
@@ -109,6 +111,7 @@ function SearchPageContent() {
       // 검색 API 호출
       const searchParams: any = {
         keyword: searchTerm,
+        searchType: searchType,
       };
 
       if (category) {
@@ -150,7 +153,7 @@ function SearchPageContent() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 검색 헤더 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">고급 검색</h1>
 
           {/* 검색 입력 */}
@@ -165,7 +168,19 @@ function SearchPageContent() {
           </div>
 
           {/* 필터 옵션 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <Select
+              placeholder="검색 타입"
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+              options={[
+                { value: 'ALL', label: '제목+내용' },
+                { value: 'TITLE', label: '제목' },
+                { value: 'CONTENT', label: '내용' },
+                { value: 'AUTHOR', label: '닉네임' },
+              ]}
+            />
+
             <Select
               placeholder="카테고리 선택"
               value={category}
@@ -215,12 +230,12 @@ function SearchPageContent() {
 
         {/* 검색 기록 */}
         {!searched && searchHistory.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">최근 검색어</h2>
               <button
                 onClick={clearSearchHistory}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               >
                 전체 삭제
               </button>
@@ -234,7 +249,7 @@ function SearchPageContent() {
                     setSearchQuery(term);
                     handleSearch(term);
                   }}
-                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
+                  className="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full text-sm transition-colors"
                 >
                   {term}
                 </button>
@@ -245,7 +260,7 @@ function SearchPageContent() {
 
         {/* 검색 결과 */}
         {searched && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 검색 결과 {results.length > 0 && `(${results.length})`}
@@ -256,9 +271,9 @@ function SearchPageContent() {
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-                    <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
                   </div>
                 ))}
               </div>
@@ -268,19 +283,19 @@ function SearchPageContent() {
                   <Link
                     key={post.id}
                     href={`/posts/${post.id}`}
-                    className="block border-b border-gray-200 pb-6 last:border-0 hover:bg-gray-50 transition-colors p-4 rounded-lg"
+                    className="block border-b border-gray-200 dark:border-gray-700 pb-6 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors p-4 rounded-lg"
                   >
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                       {highlightText(post.title, searchQuery)}
                     </h3>
 
                     {post.summary && (
-                      <p className="text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                         {highlightText(post.summary, searchQuery)}
                       </p>
                     )}
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span>작성자: {post.author.nickname || '알 수 없음'}</span>
                       <span>👁️ {post.viewCount}</span>
                       <span>❤️ {post.likeCount}</span>
