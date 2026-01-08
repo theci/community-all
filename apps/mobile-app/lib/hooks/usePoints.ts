@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import { pointService } from '../services';
-import type { PointInfo, PointTransaction, PointRanking } from '../types';
+import type { PointInfo, PointTransaction } from '../types';
 
 export function useMyPoints() {
   const { data, error, isLoading, mutate } = useSWR<PointInfo>(
@@ -32,7 +32,7 @@ export function useMyTransactions(page = 0, size = 20) {
 }
 
 export function usePointRanking(limit = 100) {
-  const { data, error, isLoading } = useSWR<PointRanking[]>(
+  const { data, error, isLoading } = useSWR<PointInfo[]>(
     `/points/ranking?limit=${limit}`,
     () => pointService.getRanking(limit),
     {

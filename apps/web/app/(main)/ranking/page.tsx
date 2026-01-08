@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { pointService } from '@/lib/services';
 import { useAuth } from '@/lib/hooks';
 import { Card } from '@ddd3/design-system';
-import type { PointRanking, PointInfo } from '@ddd3/types';
+import type { PointInfo } from '@ddd3/types';
 
 export default function RankingPage() {
   const { user } = useAuth();
-  const [rankings, setRankings] = useState<PointRanking[]>([]);
+  const [rankings, setRankings] = useState<PointInfo[]>([]);
   const [myPoints, setMyPoints] = useState<PointInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +23,8 @@ export default function RankingPage() {
       setLoading(true);
       setError(null);
 
-      // 랭킹 목록 로드
-      const rankingData = await pointService.getRanking(100);
+      // 랭킹 목록 로드 (상위 10명)
+      const rankingData = await pointService.getRanking(10);
       setRankings(rankingData);
 
       // 내 포인트 정보 로드 (로그인한 경우)
@@ -154,11 +154,11 @@ export default function RankingPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {rankings.map((ranking, index) => (
+              {rankings.map((pointInfo, index) => (
                 <div
-                  key={`${ranking.user.id}-${index}`}
+                  key={`${pointInfo.userId}-${index}`}
                   className={`flex items-center justify-between p-4 rounded-lg transition-colors ${
-                    ranking.user.id === user?.id
+                    pointInfo.userId === user?.id
                       ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
                       : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
@@ -167,37 +167,37 @@ export default function RankingPage() {
                     {/* 순위 */}
                     <div className="w-12 text-center">
                       <span className="text-xl font-bold text-gray-700 dark:text-gray-300">
-                        {getRankBadge(ranking.rank)}
+                        {getRankBadge(index + 1)}
                       </span>
                     </div>
 
                     {/* 사용자 정보 */}
                     <div className="flex items-center gap-3 flex-1">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
-                        {ranking.user.nickname?.charAt(0).toUpperCase() || 'U'}
+                        {pointInfo.userId}
                       </div>
                       <div>
                         <div className="font-semibold text-gray-900 dark:text-white">
-                          {ranking.user.nickname}
+                          User #{pointInfo.userId}
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">
-                          @{ranking.user.username}
+                          {pointInfo.totalPoints.toLocaleString()} 포인트
                         </div>
                       </div>
                     </div>
 
                     {/* 레벨 */}
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">{getLevelBadge(parseInt(ranking.currentLevel.replace('LEVEL_', '')))}</span>
-                      <span className={`font-medium ${getLevelColor(parseInt(ranking.currentLevel.replace('LEVEL_', '')))}`}>
-                        {ranking.levelDisplayName}
+                      <span className="text-2xl">{getLevelBadge(pointInfo.levelNumber)}</span>
+                      <span className={`font-medium ${getLevelColor(pointInfo.levelNumber)}`}>
+                        {pointInfo.levelDisplayName}
                       </span>
                     </div>
 
                     {/* 포인트 */}
                     <div className="text-right min-w-[120px]">
                       <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {ranking.totalPoints.toLocaleString()}
+                        {pointInfo.totalPoints.toLocaleString()}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">포인트</div>
                     </div>

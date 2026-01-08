@@ -22,16 +22,9 @@ export const pointService = {
     return response.data;
   },
 
-  getRanking: async (limit = 100): Promise<PointRanking[]> => {
-    const response = await apiClient.get(`/points/ranking?size=${limit}`);
-
-    // API 응답이 { success, data } 형태인지 확인
-    if (response.data.success && response.data.data) {
-      return Array.isArray(response.data.data) ? response.data.data : [];
-    }
-
-    // 배열로 직접 반환되는 경우
-    return Array.isArray(response.data) ? response.data : [];
+  getRanking: async (limit = 100): Promise<PointInfo[]> => {
+    const response = await apiClient.get<ApiResponse<{ content: PointInfo[] }>>(`/points/ranking?size=${limit}`);
+    return response.data.data?.content || [];
   },
 
   usePoints: async (amount: number, reason: string): Promise<void> => {
