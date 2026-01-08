@@ -36,13 +36,13 @@ export default function PostsPage() {
           setPosts(response?.content || []);
           setTotalPages(response?.pageInfo?.totalPages || 0);
         } else if (sort === 'popular') {
-          const popularPosts = await postService.getPopularPosts(20);
-          setPosts(popularPosts || []);
-          setTotalPages(1);
+          response = await postService.getPopularPosts(7, currentPage, 20);
+          setPosts(response?.content || []);
+          setTotalPages(response?.pageInfo?.totalPages || 0);
         } else if (sort === 'trending') {
-          const trendingPosts = await postService.getTrendingPosts(7);
-          setPosts(trendingPosts || []);
-          setTotalPages(1);
+          response = await postService.getTrendingPosts(24, currentPage, 20);
+          setPosts(response?.content || []);
+          setTotalPages(response?.pageInfo?.totalPages || 0);
         }
       }
     } catch (err: any) {

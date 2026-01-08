@@ -34,28 +34,18 @@ export const postService = {
     return response.data.data;
   },
 
-  getPopularPosts: async (limit = 10): Promise<Post[]> => {
-    const response = await apiClient.get(`/posts/popular?limit=${limit}`);
-
-    // 응답이 { success, data } 형태인지 확인
-    if (response.data.success && response.data.data) {
-      return Array.isArray(response.data.data) ? response.data.data : [];
-    }
-
-    // 배열로 직접 반환되는 경우
-    return Array.isArray(response.data) ? response.data : [];
+  getPopularPosts: async (days = 7, page = 0, size = 20): Promise<PostListResponse> => {
+    const response = await apiClient.get<ApiResponse<PostListResponse>>(
+      `/posts/popular?days=${days}&page=${page}&size=${size}`
+    );
+    return response.data.data;
   },
 
-  getTrendingPosts: async (days = 7): Promise<Post[]> => {
-    const response = await apiClient.get(`/posts/trending?days=${days}`);
-
-    // 응답이 { success, data } 형태인지 확인
-    if (response.data.success && response.data.data) {
-      return Array.isArray(response.data.data) ? response.data.data : [];
-    }
-
-    // 배열로 직접 반환되는 경우
-    return Array.isArray(response.data) ? response.data : [];
+  getTrendingPosts: async (hours = 24, page = 0, size = 20): Promise<PostListResponse> => {
+    const response = await apiClient.get<ApiResponse<PostListResponse>>(
+      `/posts/trending?hours=${hours}&page=${page}&size=${size}`
+    );
+    return response.data.data;
   },
 
   createPost: async (data: PostCreateRequest, currentUserId: number): Promise<Post> => {

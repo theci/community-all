@@ -55,10 +55,10 @@ export function useSearchPosts(params: PostSearchRequest, page = 0, size = 20) {
   };
 }
 
-export function usePopularPosts(limit = 10) {
-  const { data, error, isLoading } = useSWR<Post[]>(
-    `/posts/popular?limit=${limit}`,
-    () => postService.getPopularPosts(limit),
+export function usePopularPosts(days = 7, page = 0, size = 20) {
+  const { data, error, isLoading } = useSWR<PostListResponse>(
+    `/posts/popular?days=${days}&page=${page}&size=${size}`,
+    () => postService.getPopularPosts(days, page, size),
     {
       revalidateOnFocus: false,
       dedupingInterval: 60000, // 1분
@@ -66,16 +66,18 @@ export function usePopularPosts(limit = 10) {
   );
 
   return {
-    posts: data || [],
+    posts: data?.content || [],
+    totalPages: data?.pageInfo?.totalPages || 0,
+    totalElements: data?.pageInfo?.totalElements || 0,
     isLoading,
     isError: error,
   };
 }
 
-export function useTrendingPosts(days = 7) {
-  const { data, error, isLoading } = useSWR<Post[]>(
-    `/posts/trending?days=${days}`,
-    () => postService.getTrendingPosts(days),
+export function useTrendingPosts(hours = 24, page = 0, size = 20) {
+  const { data, error, isLoading } = useSWR<PostListResponse>(
+    `/posts/trending?hours=${hours}&page=${page}&size=${size}`,
+    () => postService.getTrendingPosts(hours, page, size),
     {
       revalidateOnFocus: false,
       dedupingInterval: 60000, // 1분
@@ -83,7 +85,9 @@ export function useTrendingPosts(days = 7) {
   );
 
   return {
-    posts: data || [],
+    posts: data?.content || [],
+    totalPages: data?.pageInfo?.totalPages || 0,
+    totalElements: data?.pageInfo?.totalElements || 0,
     isLoading,
     isError: error,
   };
