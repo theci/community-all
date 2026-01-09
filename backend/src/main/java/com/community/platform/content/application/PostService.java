@@ -317,6 +317,22 @@ public class PostService {
     }
 
     /**
+     * 팔로잉한 사용자들의 게시글 조회
+     */
+    public Page<Post> getFollowingFeed(List<Long> followingIds, Pageable pageable) {
+        log.debug("팔로잉 피드 조회: followingIds count={}", followingIds.size());
+
+        if (followingIds == null || followingIds.isEmpty()) {
+            // 팔로잉한 사용자가 없으면 빈 페이지 반환
+            return Page.empty(pageable);
+        }
+
+        return postRepository.findByAuthorIdInAndStatusOrderByPublishedAtDesc(
+            followingIds, PostStatus.PUBLISHED, pageable
+        );
+    }
+
+    /**
      * 사용자 존재 여부 확인
      */
     private void validateUserExists(Long userId) {

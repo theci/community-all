@@ -6,14 +6,16 @@ import { Post, Category } from '@ddd3/types';
 import { PostCard } from '@/components/features/post/PostCard';
 import { Button } from '@ddd3/design-system';
 import Link from 'next/link';
+import { useAuth } from '@/lib/hooks';
 
 export default function PostsPage() {
+  const { user, isAuthenticated } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'trending'>('latest');
+  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'trending' | 'following'>('latest');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -41,6 +43,11 @@ export default function PostsPage() {
           setTotalPages(response?.pageInfo?.totalPages || 0);
         } else if (sort === 'trending') {
           response = await postService.getTrendingPosts(24, currentPage, 20);
+          setPosts(response?.content || []);
+          setTotalPages(response?.pageInfo?.totalPages || 0);
+        } else if (sort === 'following' && user) {
+          // 팔로잉 피드
+          response = await postService.getFollowingFeed(user.id, currentPage, 20);
           setPosts(response?.content || []);
           setTotalPages(response?.pageInfo?.totalPages || 0);
         }
@@ -71,7 +78,7 @@ export default function PostsPage() {
     }
   };
 
-  const handleSortChange = (newSort: 'latest' | 'popular' | 'trending') => {
+  const handleSortChange = (newSort: 'latest' | 'popular' | 'trending' | 'following') => {
     setSortBy(newSort);
     setPage(0);
   };
@@ -127,6 +134,18 @@ export default function PostsPage() {
 
         {/* 정렬 옵션 */}
         <div className="flex gap-2 mb-6">
+          {isAuthenticated && (
+            <button
+              onClick={() => handleSortChange('following')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                sortBy === 'following'
+                  ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              팔로잉
+            </button>
+          )}
           <button
             onClick={() => handleSortChange('latest')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${

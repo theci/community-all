@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks';
-import { userService, postService } from '@/lib/services';
+import { userService, postService, followService } from '@/lib/services';
 import { Card, Button } from '@ddd3/design-system';
 import type { User, Post } from '@ddd3/types';
 
@@ -20,6 +20,9 @@ export default function UserPublicProfilePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followCount, setFollowCount] = useState({ followingCount: 0, followerCount: 0 });
 
   useEffect(() => {
     if (isNaN(userId)) {
@@ -43,11 +46,48 @@ export default function UserPublicProfilePage() {
       // 사용자의 게시글 로드
       const userPosts = await postService.getPostsByAuthor(userId);
       setPosts(userPosts);
+
+      // 팔로우 카운트 로드
+      const counts = await followService.getFollowCount(userId);
+      setFollowCount(counts);
+
+      // 현재 사용자가 로그인한 경우 팔로우 상태 확인
+      if (currentUser && currentUser.id !== userId) {
+        const status = await followService.getFollowStatus(userId, currentUser.id);
+        setIsFollowing(status.isFollowing);
+      }
     } catch (err: any) {
       console.error('Failed to load user profile:', err);
       setError(err.response?.data?.message || '사용자 정보를 불러올 수 없습니다.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    if (!currentUser) {
+      alert('로그인이 필요합니다.');
+      router.push('/login');
+      return;
+    }
+
+    try {
+      setFollowLoading(true);
+
+      if (isFollowing) {
+        await followService.unfollow(userId, currentUser.id);
+        setIsFollowing(false);
+        setFollowCount((prev) => ({ ...prev, followerCount: prev.followerCount - 1 }));
+      } else {
+        await followService.follow(userId, currentUser.id);
+        setIsFollowing(true);
+        setFollowCount((prev) => ({ ...prev, followerCount: prev.followerCount + 1 }));
+      }
+    } catch (err: any) {
+      console.error('Failed to toggle follow:', err);
+      alert(err.response?.data?.message || '팔로우 처리에 실패했습니다.');
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -119,8 +159,8 @@ export default function UserPublicProfilePage() {
               </div>
             </div>
 
-            {/* 본인 프로필인 경우 편집 버튼 */}
-            {isOwnProfile && (
+            {/* 본인 프로필인 경우 편집 버튼, 다른 사람 프로필인 경우 팔로우 버튼 */}
+            {isOwnProfile ? (
               <div className="flex gap-2">
                 <Button
                   onClick={() => router.push('/profile')}
@@ -135,7 +175,19 @@ export default function UserPublicProfilePage() {
                   프로필 편집
                 </Button>
               </div>
-            )}
+            ) : currentUser ? (
+              <Button
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+                className={
+                  isFollowing
+                    ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }
+              >
+                {followLoading ? '처리중...' : isFollowing ? '팔로잉' : '팔로우'}
+              </Button>
+            ) : null}
           </div>
 
           {/* 통계 */}
@@ -146,6 +198,18 @@ export default function UserPublicProfilePage() {
                   {posts.length}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">게시글</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {followCount.followerCount}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">팔로워</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {followCount.followingCount}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">팔로잉</div>
               </div>
             </div>
           </div>

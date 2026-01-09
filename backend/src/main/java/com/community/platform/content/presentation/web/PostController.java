@@ -7,6 +7,7 @@ import com.community.platform.content.dto.*;
 import com.community.platform.shared.dto.ApiResponse;
 import com.community.platform.shared.dto.PageResponse;
 import com.community.platform.shared.security.SecurityUtils;
+import com.community.platform.user.application.UserFollowService;
 import com.community.platform.user.application.UserMapper;
 import com.community.platform.user.application.UserService;
 import com.community.platform.user.domain.User;
@@ -36,6 +37,7 @@ public class PostController {
 
     private final PostService postService;
     private final UserService userService;
+    private final UserFollowService userFollowService;
     private final ContentMapper contentMapper;
     private final UserMapper userMapper;
 
@@ -265,6 +267,27 @@ public class PostController {
         log.debug("트렌딩 게시글 조회: hours={}", hours);
 
         Page<Post> posts = postService.getTrendingPosts(hours, pageable);
+        Page<PostSummaryResponse> postResponses = posts.map(post -> buildPostSummaryResponse(post, currentUserId));
+        PageResponse<PostSummaryResponse> response = PageResponse.of(postResponses);
+
+        return ApiResponse.success(response);
+    }
+
+    /**
+     * 팔로잉 피드 조회 (팔로잉한 사용자들의 게시글)
+     * GET /api/v1/posts/following
+     */
+    @GetMapping("/following")
+    public ApiResponse<PageResponse<PostSummaryResponse>> getFollowingFeed(
+            @RequestParam Long currentUserId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        log.debug("팔로잉 피드 조회: currentUserId={}", currentUserId);
+
+        // 팔로잉한 사용자 ID 목록 조회
+        List<Long> followingIds = userFollowService.getFollowingIds(currentUserId);
+
+        // 팔로잉한 사용자들의 게시글 조회
+        Page<Post> posts = postService.getFollowingFeed(followingIds, pageable);
         Page<PostSummaryResponse> postResponses = posts.map(post -> buildPostSummaryResponse(post, currentUserId));
         PageResponse<PostSummaryResponse> response = PageResponse.of(postResponses);
 

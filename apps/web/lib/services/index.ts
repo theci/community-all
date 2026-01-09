@@ -10,3 +10,4 @@ export * from './notificationService';
 export * from './messageService';
 export * from './adminService';
 export * from './reportService';
+export * from './followService';

@@ -145,4 +145,12 @@ export const postService = {
     // 배열로 직접 반환되는 경우
     return Array.isArray(response.data) ? response.data : [];
   },
+
+  // 팔로잉 피드 조회
+  getFollowingFeed: async (currentUserId: number, page = 0, size = 20): Promise<PostListResponse> => {
+    const response = await apiClient.get<ApiResponse<PostListResponse>>(
+      `/posts/following?currentUserId=${currentUserId}&page=${page}&size=${size}`
+    );
+    return response.data.data;
+  },
 };

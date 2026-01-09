@@ -99,4 +99,10 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     // 관련 정보와 함께 게시글 조회 (N+1 문제 방지)
     @Query("SELECT p FROM Post p JOIN FETCH p.category WHERE p.id = :postId")
     Optional<Post> findByIdWithCategory(@Param("postId") Long postId);
+
+    // 팔로잉한 사용자들의 게시글 조회 (팔로잉 피드용)
+    @Query("SELECT p FROM Post p JOIN FETCH p.category WHERE p.authorId IN :authorIds AND p.status = :status ORDER BY p.publishedAt DESC")
+    Page<Post> findByAuthorIdInAndStatusOrderByPublishedAtDesc(@Param("authorIds") List<Long> authorIds,
+                                                                @Param("status") PostStatus status,
+                                                                Pageable pageable);
 }
