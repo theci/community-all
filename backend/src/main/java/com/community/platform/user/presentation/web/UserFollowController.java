@@ -28,9 +28,9 @@ public class UserFollowController {
      * POST /api/v1/users/{userId}/follow
      */
     @PostMapping("/{userId}/follow")
-    public ApiResponse<Void> followUser(
-            @PathVariable Long userId,
-            @RequestParam Long currentUserId) {
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<Void> followUser(@PathVariable Long userId) {
+        Long currentUserId = SecurityUtils.requireCurrentUserId();
         log.info("팔로우 요청: currentUserId={}, targetUserId={}", currentUserId, userId);
 
         userFollowService.follow(currentUserId, userId);
@@ -42,9 +42,9 @@ public class UserFollowController {
      * DELETE /api/v1/users/{userId}/follow
      */
     @DeleteMapping("/{userId}/follow")
-    public ApiResponse<Void> unfollowUser(
-            @PathVariable Long userId,
-            @RequestParam Long currentUserId) {
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<Void> unfollowUser(@PathVariable Long userId) {
+        Long currentUserId = SecurityUtils.requireCurrentUserId();
         log.info("언팔로우 요청: currentUserId={}, targetUserId={}", currentUserId, userId);
 
         userFollowService.unfollow(currentUserId, userId);
@@ -56,9 +56,9 @@ public class UserFollowController {
      * GET /api/v1/users/{userId}/follow/status
      */
     @GetMapping("/{userId}/follow/status")
-    public ApiResponse<Map<String, Boolean>> getFollowStatus(
-            @PathVariable Long userId,
-            @RequestParam Long currentUserId) {
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<Map<String, Boolean>> getFollowStatus(@PathVariable Long userId) {
+        Long currentUserId = SecurityUtils.requireCurrentUserId();
         boolean isFollowing = userFollowService.isFollowing(currentUserId, userId);
 
         Map<String, Boolean> response = new HashMap<>();

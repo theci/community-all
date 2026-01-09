@@ -5,6 +5,7 @@ import com.community.platform.shared.security.jwt.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
-    
+    private static final String ACCESS_TOKEN_COOKIE = "accessToken";
+
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
 
@@ -78,14 +80,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * HTTP 요청에서 JWT 토큰 추출
+     * 우선순위: Cookie > Authorization Header
      */
     private String resolveToken(HttpServletRequest request) {
+        // 1. 쿠키에서 토큰 추출 시도
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (ACCESS_TOKEN_COOKIE.equals(cookie.getName())) {
+                    String token = cookie.getValue();
+                    if (StringUtils.hasText(token)) {
+                        log.debug("쿠키에서 액세스 토큰 추출 성공");
+                        return token;
+                    }
+                }
+            }
+        }
+
+        // 2. Authorization 헤더에서 토큰 추출 (fallback)
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            log.debug("Authorization 헤더에서 액세스 토큰 추출 성공");
             return bearerToken.substring(BEARER_PREFIX.length());
         }
-        
+
         return null;
     }
 

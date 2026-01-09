@@ -47,7 +47,7 @@ export default function PostsPage() {
           setTotalPages(response?.pageInfo?.totalPages || 0);
         } else if (sort === 'following' && user) {
           // 팔로잉 피드
-          response = await postService.getFollowingFeed(user.id, currentPage, 20);
+          response = await postService.getFollowingFeed(currentPage, 20);
           setPosts(response?.content || []);
           setTotalPages(response?.pageInfo?.totalPages || 0);
         }

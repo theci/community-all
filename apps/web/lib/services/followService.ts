@@ -9,19 +9,19 @@ interface ApiResponse<T> {
 
 export const followService = {
   // 팔로우
-  follow: async (targetUserId: number, currentUserId: number): Promise<void> => {
-    await apiClient.post<ApiResponse<void>>(`/users/${targetUserId}/follow?currentUserId=${currentUserId}`);
+  follow: async (targetUserId: number): Promise<void> => {
+    await apiClient.post<ApiResponse<void>>(`/users/${targetUserId}/follow`);
   },
 
   // 언팔로우
-  unfollow: async (targetUserId: number, currentUserId: number): Promise<void> => {
-    await apiClient.delete(`/users/${targetUserId}/follow?currentUserId=${currentUserId}`);
+  unfollow: async (targetUserId: number): Promise<void> => {
+    await apiClient.delete(`/users/${targetUserId}/follow`);
   },
 
   // 팔로우 상태 확인
-  getFollowStatus: async (targetUserId: number, currentUserId: number): Promise<{ isFollowing: boolean }> => {
+  getFollowStatus: async (targetUserId: number): Promise<{ isFollowing: boolean }> => {
     const response = await apiClient.get<ApiResponse<{ isFollowing: boolean }>>(
-      `/users/${targetUserId}/follow/status?currentUserId=${currentUserId}`
+      `/users/${targetUserId}/follow/status`
     );
     return response.data.data;
   },

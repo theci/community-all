@@ -7,7 +7,6 @@ import type { User, LoginRequest, RegisterRequest } from '../types';
 
 interface AuthState {
   user: User | null;
-  accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -15,7 +14,7 @@ interface AuthState {
 
   login: (credentials: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   setUser: (user: User) => void;
   clearError: () => void;
   setHasHydrated: (state: boolean) => void;
@@ -25,7 +24,6 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      accessToken: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -39,14 +37,10 @@ export const useAuthStore = create<AuthState>()(
           // 디버깅: 로그인 응답 확인
           console.log('Login response:', response);
 
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('accessToken', response.accessToken);
-            localStorage.setItem('refreshToken', response.refreshToken);
-          }
+          // 토큰은 HTTP-only 쿠키로 자동 설정되므로 localStorage 사용 불필요
 
           set({
             user: response.user,
-            accessToken: response.accessToken,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -77,18 +71,19 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () => {
-        // JWT는 stateless이므로 클라이언트에서 토큰만 제거하면 됨
-        // 백엔드 API 호출 불필요 (401 에러 방지)
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+      logout: async () => {
+        try {
+          // 백엔드에 로그아웃 요청하여 쿠키 제거
+          await authService.logout();
+        } catch (error) {
+          console.error('Logout error:', error);
+          // 에러가 발생해도 클라이언트 상태는 초기화
+        } finally {
+          set({
+            user: null,
+            isAuthenticated: false,
+          });
         }
-        set({
-          user: null,
-          accessToken: null,
-          isAuthenticated: false,
-        });
       },
 
       setUser: (user) => set({ user }),
@@ -102,7 +97,6 @@ export const useAuthStore = create<AuthState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {

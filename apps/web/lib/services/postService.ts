@@ -48,27 +48,27 @@ export const postService = {
     return response.data.data;
   },
 
-  createPost: async (data: PostCreateRequest, currentUserId: number): Promise<Post> => {
-    const response = await apiClient.post<ApiResponse<Post>>(`/posts?currentUserId=${currentUserId}`, data);
+  createPost: async (data: PostCreateRequest): Promise<Post> => {
+    const response = await apiClient.post<ApiResponse<Post>>(`/posts`, data);
     return response.data.data;
   },
 
-  updatePost: async (postId: number, data: PostUpdateRequest, currentUserId: number): Promise<Post> => {
-    const response = await apiClient.put<ApiResponse<Post>>(`/posts/${postId}?currentUserId=${currentUserId}`, data);
+  updatePost: async (postId: number, data: PostUpdateRequest): Promise<Post> => {
+    const response = await apiClient.put<ApiResponse<Post>>(`/posts/${postId}`, data);
     return response.data.data;
   },
 
-  deletePost: async (postId: number, currentUserId: number): Promise<void> => {
-    await apiClient.delete(`/posts/${postId}?currentUserId=${currentUserId}`);
+  deletePost: async (postId: number): Promise<void> => {
+    await apiClient.delete(`/posts/${postId}`);
   },
 
-  publishPost: async (postId: number, currentUserId: number): Promise<Post> => {
-    const response = await apiClient.post<ApiResponse<Post>>(`/posts/${postId}/publish?currentUserId=${currentUserId}`);
+  publishPost: async (postId: number): Promise<Post> => {
+    const response = await apiClient.post<ApiResponse<Post>>(`/posts/${postId}/publish`);
     return response.data.data;
   },
 
-  toggleLike: async (postId: number, currentUserId: number): Promise<{ liked: boolean; likeCount: number }> => {
-    const response = await apiClient.post<ApiResponse<{ isLiked: boolean; totalLikeCount: number }>>(`/posts/${postId}/like?currentUserId=${currentUserId}`);
+  toggleLike: async (postId: number): Promise<{ liked: boolean; likeCount: number }> => {
+    const response = await apiClient.post<ApiResponse<{ isLiked: boolean; totalLikeCount: number }>>(`/posts/${postId}/like`);
     // 백엔드 응답을 프론트엔드 형식으로 변환
     return {
       liked: response.data.data.isLiked,
@@ -82,11 +82,11 @@ export const postService = {
     return response.data.data;
   },
 
-  toggleScrap: async (postId: number, currentUserId: number, currentScrapedState: boolean, folderId?: number): Promise<{ scraped: boolean }> => {
+  toggleScrap: async (postId: number, currentScrapedState: boolean, folderId?: number): Promise<{ scraped: boolean }> => {
     // 현재 스크랩 상태를 기준으로 적절한 API 호출
     if (currentScrapedState) {
       // 이미 스크랩되어 있으면 DELETE로 취소
-      await apiClient.delete(`/posts/${postId}/scrap?currentUserId=${currentUserId}`);
+      await apiClient.delete(`/posts/${postId}/scrap`);
       return { scraped: false };
     } else {
       // 스크랩되어 있지 않으면 POST로 추가
@@ -94,7 +94,7 @@ export const postService = {
         postId,
         folderId: folderId || null,
       };
-      await apiClient.post(`/posts/${postId}/scrap?currentUserId=${currentUserId}`, requestBody);
+      await apiClient.post(`/posts/${postId}/scrap`, requestBody);
       return { scraped: true };
     }
   },
@@ -117,9 +117,9 @@ export const postService = {
   },
 
   // 좋아요한 게시글 조회
-  getLikedPosts: async (userId: number, page = 0, size = 20): Promise<Post[]> => {
+  getLikedPosts: async (page = 0, size = 20): Promise<Post[]> => {
     const response = await apiClient.get(
-      `/posts/likes/me?currentUserId=${userId}&page=${page}&size=${size}`
+      `/posts/likes/me?page=${page}&size=${size}`
     );
 
     // 응답이 { success, data } 형태인지 확인
@@ -132,9 +132,9 @@ export const postService = {
   },
 
   // 스크랩한 게시글 조회
-  getScrappedPosts: async (userId: number, page = 0, size = 20): Promise<Post[]> => {
+  getScrappedPosts: async (page = 0, size = 20): Promise<Post[]> => {
     const response = await apiClient.get(
-      `/posts/scraps/me?currentUserId=${userId}&page=${page}&size=${size}`
+      `/posts/scraps/me?page=${page}&size=${size}`
     );
 
     // 응답이 { success, data } 형태인지 확인
@@ -147,9 +147,9 @@ export const postService = {
   },
 
   // 팔로잉 피드 조회
-  getFollowingFeed: async (currentUserId: number, page = 0, size = 20): Promise<PostListResponse> => {
+  getFollowingFeed: async (page = 0, size = 20): Promise<PostListResponse> => {
     const response = await apiClient.get<ApiResponse<PostListResponse>>(
-      `/posts/following?currentUserId=${currentUserId}&page=${page}&size=${size}`
+      `/posts/following?page=${page}&size=${size}`
     );
     return response.data.data;
   },

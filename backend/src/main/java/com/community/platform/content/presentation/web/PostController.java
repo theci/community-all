@@ -278,9 +278,10 @@ public class PostController {
      * GET /api/v1/posts/following
      */
     @GetMapping("/following")
+    @PreAuthorize("isAuthenticated()")
     public ApiResponse<PageResponse<PostSummaryResponse>> getFollowingFeed(
-            @RequestParam Long currentUserId,
             @PageableDefault(size = 20) Pageable pageable) {
+        Long currentUserId = SecurityUtils.requireCurrentUserId();
         log.debug("팔로잉 피드 조회: currentUserId={}", currentUserId);
 
         // 팔로잉한 사용자 ID 목록 조회

@@ -53,7 +53,7 @@ export default function UserPublicProfilePage() {
 
       // 현재 사용자가 로그인한 경우 팔로우 상태 확인
       if (currentUser && currentUser.id !== userId) {
-        const status = await followService.getFollowStatus(userId, currentUser.id);
+        const status = await followService.getFollowStatus(userId);
         setIsFollowing(status.isFollowing);
       }
     } catch (err: any) {
@@ -75,11 +75,11 @@ export default function UserPublicProfilePage() {
       setFollowLoading(true);
 
       if (isFollowing) {
-        await followService.unfollow(userId, currentUser.id);
+        await followService.unfollow(userId);
         setIsFollowing(false);
         setFollowCount((prev) => ({ ...prev, followerCount: prev.followerCount - 1 }));
       } else {
-        await followService.follow(userId, currentUser.id);
+        await followService.follow(userId);
         setIsFollowing(true);
         setFollowCount((prev) => ({ ...prev, followerCount: prev.followerCount + 1 }));
       }
