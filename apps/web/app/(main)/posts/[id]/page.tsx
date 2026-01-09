@@ -216,9 +216,12 @@ export default function PostDetailPage() {
           {/* 메타 정보 */}
           <div className="flex items-center justify-between pb-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-4">
-              <span className="font-medium text-gray-900 dark:text-white">
+              <Link
+                href={`/users/${post.author.id}`}
+                className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
                 {post.author.nickname || post.author.username}
-              </span>
+              </Link>
               <span className="text-gray-500 dark:text-gray-400 text-sm">
                 {formatDate(post.createdAt)}
               </span>

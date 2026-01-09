@@ -15,6 +15,9 @@ export interface UserProfile {
   avatarUrl?: string;
   website?: string;
   location?: string;
+  profileImageUrl?: string;
+  birthDate?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
 }
 
 export enum UserRole {
