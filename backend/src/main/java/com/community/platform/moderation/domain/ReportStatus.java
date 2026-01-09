@@ -31,7 +31,7 @@ public enum ReportStatus {
 
     public boolean canTransitionTo(ReportStatus newStatus) {
         return switch (this) {
-            case PENDING -> newStatus == IN_REVIEW || newStatus == REJECTED;
+            case PENDING -> newStatus == IN_REVIEW || newStatus == APPROVED || newStatus == REJECTED;
             case IN_REVIEW -> newStatus == APPROVED || newStatus == REJECTED;
             case APPROVED, REJECTED -> false;
         };

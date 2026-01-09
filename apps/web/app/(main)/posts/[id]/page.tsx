@@ -8,10 +8,11 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { postService } from '@/lib/services';
-import { Post } from '@ddd3/types';
+import { Post, ReportTargetType } from '@ddd3/types';
 import { useAuth } from '@/lib/hooks';
 import { Button, Modal } from '@ddd3/design-system';
 import { CommentList } from '@/components/features/comment';
+import { ReportModal } from '@/components/features/report';
 
 export default function PostDetailPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function PostDetailPage() {
   const [scraped, setScraped] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     loadPost();
@@ -303,6 +305,19 @@ export default function PostDetailPage() {
                 </svg>
                 스크랩
               </button>
+
+              {/* 신고 버튼 (작성자가 아닌 경우에만) */}
+              {!isAuthor && isAuthenticated && (
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  신고
+                </button>
+              )}
             </div>
 
             {/* 작성자 전용 버튼 */}
@@ -357,6 +372,17 @@ export default function PostDetailPage() {
             </Button>
           </div>
         </Modal>
+
+        {/* 신고 모달 */}
+        {post && (
+          <ReportModal
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            targetType={ReportTargetType.POST}
+            targetId={postId}
+            targetTitle={post.title}
+          />
+        )}
       </div>
     </div>
   );

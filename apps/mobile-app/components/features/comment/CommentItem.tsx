@@ -31,6 +31,7 @@ export function CommentItem({
 
   const isAuthor = currentUserId === comment.author.id;
   const isDeleted = comment.status === 'DELETED';
+  const isReported = comment.status === 'REPORTED';
 
   // 답글이 있으면 자동으로 펼치기
   useEffect(() => {
@@ -137,6 +138,8 @@ export function CommentItem({
             {/* 댓글 본문 */}
             {isDeleted ? (
               <p className="text-gray-500 italic">삭제된 댓글입니다.</p>
+            ) : isReported ? (
+              <p className="text-gray-500 italic">신고 처리된 댓글입니다.</p>
             ) : isEditing ? (
               <CommentForm
                 onSubmit={handleEdit}
@@ -151,7 +154,7 @@ export function CommentItem({
           </div>
 
           {/* 액션 버튼 */}
-          {!isDeleted && (
+          {!isDeleted && !isReported && (
             <div className="flex items-center gap-3 mt-2 text-sm">
               <button
                 onClick={() => setShowReplyForm(!showReplyForm)}

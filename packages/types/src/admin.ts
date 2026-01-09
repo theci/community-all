@@ -25,12 +25,12 @@ export interface PointStatistics {
 
 export interface Report {
   id: number;
-  reportType: 'POST' | 'COMMENT' | 'USER';
+  reportType: 'POST' | 'COMMENT' | 'CHAT' | 'USER';
   targetId: number;
   targetType: string;
   reason: string;
   description?: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: 'PENDING' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED';
   reporter: {
     id: number;
     username: string;

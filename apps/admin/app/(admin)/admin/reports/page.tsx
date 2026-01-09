@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { adminService } from '@/lib/services';
 import { useAuth } from '@/lib/hooks';
 import type { Report, ReportDetail } from '@ddd3/types';
+import { REPORT_REASON_OPTIONS } from '@ddd3/types';
 import { Button, Modal } from '@ddd3/design-system';
 
 export default function ReportsManagementPage() {
@@ -13,11 +14,12 @@ export default function ReportsManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [filter, setFilter] = useState<'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL'>('PENDING');
+  const [filter, setFilter] = useState<'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
 
   const [selectedReport, setSelectedReport] = useState<ReportDetail | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [processingNote, setProcessingNote] = useState('');
+  const [actionTaken, setActionTaken] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -32,9 +34,8 @@ export default function ReportsManagementPage() {
       let response;
       if (filter === 'PENDING') {
         response = await adminService.getPendingReports(page, 20);
-      } else if (filter === 'ALL') {
-        response = await adminService.getAllReports(page, 20);
       } else {
+        // APPROVED 또는 REJECTED
         response = await adminService.getAllReports(page, 20, filter);
       }
 
@@ -54,6 +55,7 @@ export default function ReportsManagementPage() {
       setSelectedReport(detail);
       setShowDetailModal(true);
       setProcessingNote('');
+      setActionTaken('콘텐츠 삭제'); // 기본값: 콘텐츠 삭제
     } catch (err: any) {
       console.error('Failed to load report detail:', err);
       alert(err.response?.data?.message || '신고 상세를 불러오는데 실패했습니다.');
@@ -63,8 +65,19 @@ export default function ReportsManagementPage() {
   const handleProcessReport = async (status: 'APPROVED' | 'REJECTED') => {
     if (!selectedReport || !user?.id) return;
 
-    if (!confirm(`이 신고를 ${status === 'APPROVED' ? '승인' : '거부'}하시겠습니까?`)) {
-      return;
+    // 승인 시 조치 내용 확인
+    if (status === 'APPROVED') {
+      const confirmMessage = actionTaken.includes('삭제') || actionTaken.includes('차단')
+        ? `이 신고를 승인하고 콘텐츠를 삭제하시겠습니까?\n\n조치 내용: ${actionTaken}`
+        : `이 신고를 승인하시겠습니까?\n\n조치 내용: ${actionTaken}\n\n* 콘텐츠는 삭제되지 않습니다.`;
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+    } else {
+      if (!confirm('이 신고를 거부하시겠습니까?')) {
+        return;
+      }
     }
 
     try {
@@ -72,6 +85,7 @@ export default function ReportsManagementPage() {
       await adminService.processReport(selectedReport.id, user.id, {
         status,
         processingNote: processingNote || undefined,
+        actionTaken: status === 'APPROVED' ? actionTaken : undefined,
         applyActions: status === 'APPROVED',
       });
 
@@ -118,11 +132,18 @@ export default function ReportsManagementPage() {
         return '게시글';
       case 'COMMENT':
         return '댓글';
+      case 'CHAT':
+        return '채팅';
       case 'USER':
         return '사용자';
       default:
         return type;
     }
+  };
+
+  const getReasonLabel = (reason: string) => {
+    const option = REPORT_REASON_OPTIONS.find(opt => opt.value === reason);
+    return option ? option.label : reason;
   };
 
   const formatDate = (dateString: string) => {
@@ -148,7 +169,7 @@ export default function ReportsManagementPage() {
       {/* 필터 */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex gap-2">
-          {(['PENDING', 'APPROVED', 'REJECTED', 'ALL'] as const).map((status) => (
+          {(['PENDING', 'APPROVED', 'REJECTED'] as const).map((status) => (
             <button
               key={status}
               onClick={() => {
@@ -164,7 +185,6 @@ export default function ReportsManagementPage() {
               {status === 'PENDING' && '대기중'}
               {status === 'APPROVED' && '승인됨'}
               {status === 'REJECTED' && '거부됨'}
-              {status === 'ALL' && '전체'}
             </button>
           ))}
         </div>
@@ -231,10 +251,10 @@ export default function ReportsManagementPage() {
                         {getReportTypeLabel(report.reportType)}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                        <div className="max-w-xs truncate">{report.reason}</div>
+                        <div className="max-w-xs truncate">{getReasonLabel(report.reason)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {report.reporter.nickname || report.reporter.username}
+                        {report.reporter?.nickname || report.reporter?.username || '알 수 없음'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(report.status)}
@@ -310,7 +330,7 @@ export default function ReportsManagementPage() {
 
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">신고 사유</label>
-              <p className="mt-1 text-gray-900 dark:text-white">{selectedReport.reason}</p>
+              <p className="mt-1 text-gray-900 dark:text-white">{getReasonLabel(selectedReport.reason)}</p>
             </div>
 
             {selectedReport.description && (
@@ -325,7 +345,7 @@ export default function ReportsManagementPage() {
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">신고자</label>
               <p className="mt-1 text-gray-900 dark:text-white">
-                {selectedReport.reporter.nickname || selectedReport.reporter.username}
+                {selectedReport.reporter?.nickname || selectedReport.reporter?.username || '알 수 없음'}
               </p>
             </div>
 
@@ -333,7 +353,7 @@ export default function ReportsManagementPage() {
               <div>
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">신고된 사용자</label>
                 <p className="mt-1 text-gray-900 dark:text-white">
-                  {selectedReport.reportedUser.nickname || selectedReport.reportedUser.username}
+                  {selectedReport.reportedUser?.nickname || selectedReport.reportedUser?.username || '알 수 없음'}
                 </p>
               </div>
             )}
@@ -343,7 +363,7 @@ export default function ReportsManagementPage() {
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">신고된 콘텐츠</label>
                 <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                    작성자: {selectedReport.targetContent.author.nickname || selectedReport.targetContent.author.username}
+                    작성자: {selectedReport.targetContent.author?.nickname || selectedReport.targetContent.author?.username || '알 수 없음'}
                   </p>
                   <p className="text-gray-900 dark:text-white whitespace-pre-wrap">
                     {selectedReport.targetContent.content}
@@ -357,17 +377,66 @@ export default function ReportsManagementPage() {
               <div className="mt-1">{getStatusBadge(selectedReport.status)}</div>
             </div>
 
-            {selectedReport.status === 'PENDING' && (
+            {selectedReport.processedAt && (
+              <div>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">처리 일시</label>
+                <p className="mt-1 text-gray-900 dark:text-white">
+                  {formatDate(selectedReport.processedAt)}
+                </p>
+              </div>
+            )}
+
+            {selectedReport.processedBy && (
+              <div>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">처리자</label>
+                <p className="mt-1 text-gray-900 dark:text-white">
+                  {selectedReport.processedBy.nickname || selectedReport.processedBy.username}
+                </p>
+              </div>
+            )}
+
+            {selectedReport.processingNote && selectedReport.status !== 'PENDING' && (
               <div>
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">처리 메모</label>
-                <textarea
-                  value={processingNote}
-                  onChange={(e) => setProcessingNote(e.target.value)}
-                  placeholder="처리 사유나 메모를 입력하세요 (선택사항)"
-                  rows={3}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <p className="mt-1 text-gray-900 dark:text-white whitespace-pre-wrap">
+                  {selectedReport.processingNote}
+                </p>
               </div>
+            )}
+
+            {selectedReport.status !== 'APPROVED' && selectedReport.status !== 'REJECTED' && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    조치 내용 <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={actionTaken}
+                    onChange={(e) => setActionTaken(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="콘텐츠 삭제">콘텐츠 삭제 (게시글/댓글 숨김)</option>
+                    <option value="경고">경고 (제재만 적용, 콘텐츠 유지)</option>
+                    <option value="무조치">무조치 (제재만 적용)</option>
+                    <option value="사용자 차단">사용자 차단 및 콘텐츠 삭제</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {actionTaken.includes('삭제') || actionTaken.includes('차단')
+                      ? '⚠️ 해당 게시글/댓글이 즉시 숨겨집니다.'
+                      : '💡 콘텐츠는 유지되고 제재만 적용됩니다.'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">처리 메모</label>
+                  <textarea
+                    value={processingNote}
+                    onChange={(e) => setProcessingNote(e.target.value)}
+                    placeholder="처리 사유나 메모를 입력하세요 (선택사항)"
+                    rows={3}
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </>
             )}
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -378,7 +447,7 @@ export default function ReportsManagementPage() {
               >
                 닫기
               </Button>
-              {selectedReport.status === 'PENDING' && (
+              {selectedReport.status !== 'APPROVED' && selectedReport.status !== 'REJECTED' && (
                 <>
                   <Button
                     onClick={() => handleProcessReport('REJECTED')}

@@ -25,13 +25,13 @@ export default function Home() {
     try {
       setLoading(true);
       const [popular, trending] = await Promise.all([
-        postService.getPopularPosts(6),
-        postService.getTrendingPosts(6),
+        postService.getPopularPosts(7, 0, 6),
+        postService.getTrendingPosts(24, 0, 6),
       ]);
 
-      // 배열인지 확인
-      setPopularPosts(Array.isArray(popular) ? popular : []);
-      setTrendingPosts(Array.isArray(trending) ? trending : []);
+      // PageResponse에서 content 추출
+      setPopularPosts(popular?.content || []);
+      setTrendingPosts(trending?.content || []);
     } catch (err) {
       console.error('Failed to load posts:', err);
     } finally {

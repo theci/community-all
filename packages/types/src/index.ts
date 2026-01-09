@@ -8,3 +8,4 @@ export * from './scrap';
 export * from './notification';
 export * from './message';
 export * from './admin';
+export * from './report';

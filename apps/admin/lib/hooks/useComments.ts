@@ -7,7 +7,7 @@ import type { Comment } from '../types';
 export function useComments(postId: number | null) {
   const { data, error, isLoading, mutate } = useSWR<Comment[]>(
     postId ? `/comments/posts/${postId}` : null,
-    postId ? () => commentService.getCommentsByPost(postId) : null
+    () => commentService.getCommentsByPost(postId!)
   );
 
   return {
@@ -21,7 +21,7 @@ export function useComments(postId: number | null) {
 export function useRootComments(postId: number | null, page = 0, size = 20) {
   const { data, error, isLoading, mutate } = useSWR<Comment[]>(
     postId ? `/comments/posts/${postId}/root?page=${page}&size=${size}` : null,
-    postId ? () => commentService.getRootComments(postId, page, size) : null
+    () => commentService.getRootComments(postId!, page, size)
   );
 
   return {
@@ -35,7 +35,7 @@ export function useRootComments(postId: number | null, page = 0, size = 20) {
 export function useReplies(parentCommentId: number | null) {
   const { data, error, isLoading, mutate } = useSWR<Comment[]>(
     parentCommentId ? `/comments/${parentCommentId}/replies` : null,
-    parentCommentId ? () => commentService.getReplies(parentCommentId) : null
+    () => commentService.getReplies(parentCommentId!)
   );
 
   return {

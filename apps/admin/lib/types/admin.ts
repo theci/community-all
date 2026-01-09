@@ -66,6 +66,7 @@ export interface ReportDetail extends Report {
 export interface ProcessReportRequest {
   status: 'APPROVED' | 'REJECTED';
   processingNote?: string;
+  actionTaken?: string;  // 관리자가 선택한 조치 내용 (예: "콘텐츠 삭제", "경고" 등)
   applyActions?: boolean;
 }
 

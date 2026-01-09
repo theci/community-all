@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 신고 응답 DTO
+ * 신고 응답 DTO (프론트엔드 호환)
  */
 @Getter
 @NoArgsConstructor
@@ -20,36 +20,46 @@ import java.time.LocalDateTime;
 @Builder
 public class ReportResponse {
     private Long id;
-    private Long reporterId;
-    private Long reportedUserId;
-    private ReportTargetType targetType;
+    private String reportType; // 프론트엔드 호환을 위해 reportType으로 변경
     private Long targetId;
-    private ReportReason reason;
+    private String targetType;
+    private String reason; // String으로 변경 (enum 이름)
     private String description;
-    private ReportStatus status;
-    private Long reviewerId;
-    private String reviewComment;
-    private LocalDateTime reviewedAt;
-    private String actionTaken;
+    private String status; // String으로 변경 (enum 이름)
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime processedAt;
+    private String processingNote;
 
-    public static ReportResponse from(Report report) {
+    // 사용자 정보
+    private UserInfo reporter;
+    private UserInfo reportedUser;
+    private UserInfo processedBy;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UserInfo {
+        private Long id;
+        private String username;
+        private String nickname;
+    }
+
+    public static ReportResponse from(Report report, UserInfo reporter, UserInfo reportedUser, UserInfo processedBy) {
         return ReportResponse.builder()
             .id(report.getId())
-            .reporterId(report.getReporterId())
-            .reportedUserId(report.getReportedUserId())
-            .targetType(report.getTargetType())
+            .reportType(report.getTargetType().name())
             .targetId(report.getTargetId())
-            .reason(report.getReason())
+            .targetType(report.getTargetType().name())
+            .reason(report.getReason().name())
             .description(report.getDescription())
-            .status(report.getStatus())
-            .reviewerId(report.getReviewerId())
-            .reviewComment(report.getReviewComment())
-            .reviewedAt(report.getReviewedAt())
-            .actionTaken(report.getActionTaken())
+            .status(report.getStatus().name())
             .createdAt(report.getCreatedAt())
-            .updatedAt(report.getUpdatedAt())
+            .processedAt(report.getReviewedAt())
+            .processingNote(report.getReviewComment())
+            .reporter(reporter)
+            .reportedUser(reportedUser)
+            .processedBy(processedBy)
             .build();
     }
 }

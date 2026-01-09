@@ -22,6 +22,7 @@ export enum CommentStatus {
   ACTIVE = 'ACTIVE',
   DELETED = 'DELETED',
   BLOCKED = 'BLOCKED',
+  REPORTED = 'REPORTED',
 }
 
 export interface CommentCreateRequest {

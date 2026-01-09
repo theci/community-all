@@ -108,6 +108,8 @@ class AdminService {
       totalPages: number;
     };
   }> {
+    // status가 있으면 /reports/status/{status} 엔드포인트 사용
+    const endpoint = status ? `/reports/status/${status}` : '/reports';
     const response = await apiClient.get<ApiResponse<{
       content: Report[];
       pageInfo: {
@@ -116,8 +118,8 @@ class AdminService {
         totalElements: number;
         totalPages: number;
       };
-    }>>('/reports', {
-      params: { page, size, status },
+    }>>(endpoint, {
+      params: { page, size },
     });
     return response.data.data;
   }

@@ -171,6 +171,11 @@ public class PostService {
     public Post getPostWithViewCount(Long postId, String userId, String ip) {
         Post post = getPostById(postId);
 
+        // 삭제된 게시글은 조회 불가
+        if (post.isDeleted()) {
+            throw new PostNotFoundException(postId);
+        }
+
         // 발행된 게시글만 조회수 증가 (Redis 중복 방지)
         if (post.isPublished()) {
             viewCountService.incrementViewCount(postId, userId, ip);

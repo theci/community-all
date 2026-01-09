@@ -6,6 +6,8 @@ import { useAuth } from '@/lib/hooks';
 import { messageService } from '@/lib/services';
 import { Card, Button, Input } from '@ddd3/design-system';
 import type { Message } from '@ddd3/types';
+import { ReportModal } from '@/components/features/report';
+import { ReportTargetType } from '@ddd3/types';
 
 export default function MessageThreadPage() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function MessageThreadPage() {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [otherUser, setOtherUser] = useState<{ id: number; nickname: string } | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -132,13 +135,26 @@ export default function MessageThreadPage() {
           ← 뒤로
         </Button>
         {otherUser && (
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white font-semibold">
-              {otherUser.nickname.charAt(0).toUpperCase()}
+          <div className="flex items-center gap-3 flex-1 justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white font-semibold">
+                {otherUser.nickname.charAt(0).toUpperCase()}
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {otherUser.nickname}
+              </h1>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {otherUser.nickname}
-            </h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowReportModal(true)}
+              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              신고
+            </Button>
           </div>
         )}
       </div>
@@ -220,6 +236,17 @@ export default function MessageThreadPage() {
           {sending ? '전송 중...' : '전송'}
         </Button>
       </form>
+
+      {/* 신고 모달 */}
+      {otherUser && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          targetType={ReportTargetType.CHAT}
+          targetId={threadId}
+          targetTitle={`${otherUser.nickname}님과의 대화`}
+        />
+      )}
     </div>
   );
 }

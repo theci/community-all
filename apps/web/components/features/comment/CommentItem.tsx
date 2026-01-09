@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Comment } from '@ddd3/types';
+import { Comment, ReportTargetType } from '@ddd3/types';
 import { CommentForm } from './CommentForm';
 import { Button } from '@ddd3/design-system';
+import { ReportModal } from '../report';
 
 interface CommentItemProps {
   comment: Comment;
@@ -28,9 +29,11 @@ export function CommentItem({
   const [isEditing, setIsEditing] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const isAuthor = currentUserId === comment.author.id;
   const isDeleted = comment.status === 'DELETED';
+  const isReported = comment.status === 'REPORTED';
 
   // 답글이 있으면 자동으로 펼치기
   useEffect(() => {
@@ -137,6 +140,8 @@ export function CommentItem({
             {/* 댓글 본문 */}
             {isDeleted ? (
               <p className="text-gray-500 italic">삭제된 댓글입니다.</p>
+            ) : isReported ? (
+              <p className="text-gray-500 italic">신고 처리된 댓글입니다.</p>
             ) : isEditing ? (
               <CommentForm
                 onSubmit={handleEdit}
@@ -151,7 +156,7 @@ export function CommentItem({
           </div>
 
           {/* 액션 버튼 */}
-          {!isDeleted && (
+          {!isDeleted && !isReported && (
             <div className="flex items-center gap-3 mt-2 text-sm">
               <button
                 onClick={() => setShowReplyForm(!showReplyForm)}
@@ -176,6 +181,15 @@ export function CommentItem({
                     {isDeleting ? '삭제 중...' : '삭제'}
                   </button>
                 </>
+              )}
+
+              {!isAuthor && currentUserId && (
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="text-gray-600 hover:text-red-600 font-medium"
+                >
+                  신고
+                </button>
               )}
 
               {comment.replyCount > 0 && (
@@ -217,6 +231,15 @@ export function CommentItem({
               ))}
             </div>
           )}
+
+          {/* 신고 모달 */}
+          <ReportModal
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            targetType={ReportTargetType.COMMENT}
+            targetId={comment.id}
+            targetTitle={`${comment.author.nickname || comment.author.username}님의 댓글`}
+          />
         </div>
       </div>
     </div>

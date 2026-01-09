@@ -52,12 +52,28 @@ public class ReportController {
      * GET /api/v1/reports/{reportId}
      */
     @GetMapping("/{reportId}")
-    public ApiResponse<ReportResponse> getReport(@PathVariable Long reportId) {
+    public ApiResponse<ReportDetailResponse> getReport(@PathVariable Long reportId) {
         log.debug("신고 상세 조회: reportId={}", reportId);
 
-        ReportResponse response = reportService.getReport(reportId);
+        ReportDetailResponse response = reportService.getReportDetail(reportId);
 
         return ApiResponse.success(response);
+    }
+
+    /**
+     * 신고 처리 (승인/거부)
+     * PUT /api/v1/reports/{reportId}/process
+     */
+    @PutMapping("/{reportId}/process")
+    public ApiResponse<ReportDetailResponse> processReport(
+            @PathVariable Long reportId,
+            @RequestParam Long userId,
+            @Valid @RequestBody ProcessReportRequest request) {
+        log.debug("신고 처리: reportId={}, userId={}, status={}", reportId, userId, request.getStatus());
+
+        ReportDetailResponse response = reportService.processReport(reportId, userId, request);
+
+        return ApiResponse.success(response, "신고가 처리되었습니다");
     }
 
     /**

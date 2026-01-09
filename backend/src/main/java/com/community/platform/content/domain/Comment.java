@@ -115,6 +115,10 @@ public class Comment extends AggregateRoot {
         this.status = CommentStatus.ACTIVE;
     }
 
+    public void markAsReported() {
+        this.status = CommentStatus.REPORTED;
+    }
+
     public void increaseLikeCount() {
         this.likeCount++;
     }
