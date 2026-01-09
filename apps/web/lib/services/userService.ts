@@ -43,13 +43,11 @@ export const userService = {
 
   // 프로필 업데이트
   updateProfile: async (data: {
-    nickname?: string;
+    profileImageUrl?: string;
     bio?: string;
-    avatarUrl?: string;
-    website?: string;
-    location?: string;
-  }): Promise<User> => {
-    const response = await apiClient.put<ApiResponse<User>>('/users/me/profile', data);
-    return response.data.data;
+    birthDate?: string; // yyyy-MM-dd 형식
+    gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  }): Promise<void> => {
+    await apiClient.put<ApiResponse<void>>('/users/me/profile', data);
   },
 };
