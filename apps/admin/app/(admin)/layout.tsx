@@ -55,30 +55,30 @@ export default function AdminLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
-              <Link href="/admin" className="text-xl font-bold text-blue-600 dark:text-blue-400">
+              <Link href="/" className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 관리자 페이지
               </Link>
               <nav className="flex gap-4">
                 <Link
-                  href="/admin"
+                  href="/"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
                 >
                   대시보드
                 </Link>
                 <Link
-                  href="/admin/users"
+                  href="/users"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
                 >
                   사용자 관리
                 </Link>
                 <Link
-                  href="/admin/posts"
+                  href="/posts"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
                 >
                   콘텐츠 관리
                 </Link>
                 <Link
-                  href="/admin/reports"
+                  href="/reports"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
                 >
                   신고 관리

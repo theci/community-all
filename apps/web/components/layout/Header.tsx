@@ -130,11 +130,11 @@ export default function Header() {
 
           {/* 사용자 메뉴 */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* 테마 토글 - 모든 사용자에게 표시 */}
+            <ThemeToggle />
+
             {isAuthenticated ? (
               <>
-                {/* 테마 토글 */}
-                <ThemeToggle />
-
                 {/* 알림 벨 */}
                 <NotificationBell />
 
@@ -213,7 +213,7 @@ export default function Header() {
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-3">
+              <>
                 <Link
                   href="/login"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
@@ -226,7 +226,7 @@ export default function Header() {
                 >
                   회원가입
                 </Link>
-              </div>
+              </>
             )}
           </div>
 
@@ -293,6 +293,12 @@ export default function Header() {
                 </div>
               </div>
             </form>
+
+            {/* 다크모드 토글 */}
+            <div className="mb-4 px-4 py-2 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">다크 모드</span>
+              <ThemeToggle />
+            </div>
 
             {/* 모바일 네비게이션 */}
             <nav className="space-y-2">
