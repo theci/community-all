@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -29,6 +29,8 @@ export default function PostDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showAuthorMenu, setShowAuthorMenu] = useState(false);
+  const authorMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadPost();
@@ -40,6 +42,22 @@ export default function PostDetailPage() {
       loadScrapStatus();
     }
   }, [postId, isAuthenticated, user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (authorMenuRef.current && !authorMenuRef.current.contains(event.target as Node)) {
+        setShowAuthorMenu(false);
+      }
+    };
+
+    if (showAuthorMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showAuthorMenu]);
 
   const loadPost = async () => {
     try {
@@ -216,25 +234,50 @@ export default function PostDetailPage() {
           {/* 메타 정보 */}
           <div className="flex items-center justify-between pb-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-4">
-              <Link
-                href={`/users/${post.author.id}`}
-                className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                {post.author.nickname || post.author.username}
-              </Link>
+              {/* 작성자 드롭다운 메뉴 */}
+              <div className="relative" ref={authorMenuRef}>
+                <button
+                  onClick={() => setShowAuthorMenu(!showAuthorMenu)}
+                  className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  {post.author.nickname || post.author.username}
+                </button>
+
+                {showAuthorMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowAuthorMenu(false)}
+                    ></div>
+                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-20 border border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() => {
+                          router.push(`/users/${post.author.id}`);
+                          setShowAuthorMenu(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        프로필 보기
+                      </button>
+                      {!isAuthor && isAuthenticated && (
+                        <button
+                          onClick={() => {
+                            router.push(`/messages/new?recipientId=${post.author.id}&recipientName=${post.author.nickname}`);
+                            setShowAuthorMenu(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          쪽지 보내기
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
               <span className="text-gray-500 dark:text-gray-400 text-sm">
                 {formatDate(post.createdAt)}
               </span>
-              {!isAuthor && isAuthenticated && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => router.push(`/messages/new?recipientId=${post.author.id}&recipientName=${post.author.nickname}`)}
-                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
-                >
-                  쪽지 보내기
-                </Button>
-              )}
             </div>
 
             <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">

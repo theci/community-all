@@ -165,11 +165,18 @@ export default function Header() {
                     ></div>
                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-20 border border-gray-200 dark:border-gray-700">
                       <Link
+                        href={`/users/${user?.id}`}
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        내 프로필 보기
+                      </Link>
+                      <Link
                         href="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        내 프로필
+                        내 활동
                       </Link>
                       <Link
                         href="/messages"
@@ -341,11 +348,18 @@ export default function Header() {
                   </Link>
                   <hr className="my-2 border-gray-200 dark:border-gray-700" />
                   <Link
+                    href={`/users/${user?.id}`}
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    내 프로필 보기
+                  </Link>
+                  <Link
                     href="/profile"
                     className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                     onClick={() => setShowMobileMenu(false)}
                   >
-                    내 프로필
+                    내 활동
                   </Link>
                   <Link
                     href="/profile/edit"
