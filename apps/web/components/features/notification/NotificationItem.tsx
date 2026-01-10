@@ -51,6 +51,13 @@ export default function NotificationItem({
             <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
           </svg>
         );
+      case 'MESSAGE':
+        return (
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+          </svg>
+        );
       case 'SYSTEM':
         return (
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -85,6 +92,8 @@ export default function NotificationItem({
         return 'text-green-600 bg-green-100';
       case 'SCRAP':
         return 'text-purple-600 bg-purple-100';
+      case 'MESSAGE':
+        return 'text-indigo-600 bg-indigo-100';
       case 'SYSTEM':
         return 'text-gray-600 bg-gray-100';
       default:
@@ -102,6 +111,22 @@ export default function NotificationItem({
       router.push(`/posts/${notification.relatedId}`);
     } else if (notification.relatedType === 'USER' && notification.relatedId) {
       router.push(`/profile/${notification.relatedId}`);
+    } else if (notification.relatedType === 'MESSAGE') {
+      // MESSAGE 타입인 경우
+      if (notification.relatedId) {
+        router.push(`/messages/${notification.relatedId}`);
+      } else {
+        // relatedId가 없으면 쪽지함 메인으로 이동
+        router.push('/messages');
+      }
+    } else if (notification.type === 'MESSAGE_RECEIVED' || notification.type === 'MESSAGE') {
+      // type으로 MESSAGE 확인
+      if (notification.relatedId) {
+        router.push(`/messages/${notification.relatedId}`);
+      } else {
+        // relatedId가 없으면 쪽지함 메인으로 이동
+        router.push('/messages');
+      }
     }
   };
 

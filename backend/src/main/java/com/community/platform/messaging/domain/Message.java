@@ -62,6 +62,7 @@ public class Message extends AggregateRoot {
         // 메시지 생성 이벤트 발행 (알림용)
         message.addDomainEvent(new MessageCreatedEvent(
                 message.getId(),
+                thread != null ? thread.getId() : null,
                 senderId,
                 recipientId,
                 content

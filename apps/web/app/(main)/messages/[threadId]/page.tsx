@@ -49,16 +49,22 @@ export default function MessageThreadPage() {
       setError(null);
 
       const response = await messageService.getThreadMessages(threadId, user.id);
-      setMessages(response.content || []);
+
+      // Sort messages by createdAt in ascending order (oldest first, newest last)
+      const sortedMessages = (response.content || []).sort((a, b) => {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+
+      setMessages(sortedMessages);
 
       // Determine other user from first message
-      if (response.content && response.content.length > 0) {
-        const firstMessage = response.content[0];
+      if (sortedMessages.length > 0) {
+        const firstMessage = sortedMessages[0];
         const other = firstMessage.sender.id === user.id ? firstMessage.recipient : firstMessage.sender;
         setOtherUser(other);
 
         // Mark unread messages as read
-        const unreadMessages = response.content.filter(m => !m.isRead && m.recipient.id === user.id);
+        const unreadMessages = sortedMessages.filter(m => !m.isRead && m.recipient.id === user.id);
         for (const msg of unreadMessages) {
           await messageService.markAsRead(msg.id, user.id);
         }

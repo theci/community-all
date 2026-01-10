@@ -27,20 +27,20 @@ public class MessageEventHandler {
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMessageCreated(MessageCreatedEvent event) {
-        log.debug("메시지 생성 이벤트 수신. messageId: {}, senderId: {}, recipientId: {}",
-                event.getMessageId(), event.getSenderId(), event.getRecipientId());
+        log.debug("메시지 생성 이벤트 수신. messageId: {}, threadId: {}, senderId: {}, recipientId: {}",
+                event.getMessageId(), event.getThreadId(), event.getSenderId(), event.getRecipientId());
 
-        // 수신자에게 알림 발송
+        // 수신자에게 알림 발송 (threadId를 relatedId로 사용하여 해당 대화로 바로 이동 가능)
         notificationService.sendNotification(
                 event.getRecipientId(),
                 NotificationType.MESSAGE_RECEIVED,
                 "새 쪽지",
                 "새로운 쪽지가 도착했습니다",
-                event.getMessageId(),
+                event.getThreadId(),  // threadId를 사용하여 특정 대화로 이동
                 RelatedEntityType.MESSAGE
         );
 
-        log.info("메시지 알림 발송 완료. messageId: {}, recipientId: {}",
-                event.getMessageId(), event.getRecipientId());
+        log.info("메시지 알림 발송 완료. messageId: {}, threadId: {}, recipientId: {}",
+                event.getMessageId(), event.getThreadId(), event.getRecipientId());
     }
 }
