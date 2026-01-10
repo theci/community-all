@@ -44,23 +44,23 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* 로고 */}
-          <div className="flex items-center">
+          <div className="flex items-center mr-8 lg:mr-12">
             <Link href="/" className="flex items-center">
               <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">Community</span>
             </Link>
           </div>
 
           {/* 데스크톱 네비게이션 */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-8">
             <Link
               href="/posts"
-              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
             >
               게시글
             </Link>
             <Link
               href="/ranking"
-              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
             >
               랭킹
             </Link>
@@ -68,19 +68,19 @@ export default function Header() {
               <>
                 <Link
                   href="/messages"
-                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
                 >
                   쪽지함
                 </Link>
                 <Link
                   href="/scraps"
-                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
                 >
                   스크랩
                 </Link>
                 <Link
                   href="/posts/create"
-                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium"
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium whitespace-nowrap"
                 >
                   글쓰기
                 </Link>
@@ -89,7 +89,7 @@ export default function Header() {
           </nav>
 
           {/* 검색바 (데스크톱) */}
-          <div className="hidden md:block flex-1 max-w-xl mx-8">
+          <div className="hidden md:block flex-1 max-w-md lg:max-w-xl mx-4 lg:mx-8">
             <form onSubmit={handleSearch}>
               <div className="flex gap-2">
                 <select

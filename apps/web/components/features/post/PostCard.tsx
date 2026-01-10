@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Post } from '@ddd3/types';
 
 interface PostCardProps {
@@ -6,6 +7,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
+  const router = useRouter();
   const formatDate = (dateString: string | undefined | null) => {
     if (!dateString) {
       console.error('No date provided for post:', post.id, 'Post data:', post);
@@ -48,9 +50,15 @@ export function PostCard({ post }: PostCardProps) {
   // publishedAt이 있으면 우선 사용, 없으면 createdAt 사용
   const displayDate = post.publishedAt || post.createdAt;
 
+  const handleCardClick = () => {
+    router.push(`/posts/${post.id}`);
+  };
+
   return (
-    <Link href={`/posts/${post.id}`}>
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer">
+    <div
+      onClick={handleCardClick}
+      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer"
+    >
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -101,7 +109,9 @@ export function PostCard({ post }: PostCardProps) {
           <div className="flex items-center gap-2">
             <Link
               href={`/users/${post.author.id}`}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               className="text-sm text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               {post.author.nickname || post.author.username}
@@ -130,7 +140,6 @@ export function PostCard({ post }: PostCardProps) {
             </span>
           </div>
         </div>
-      </div>
-    </Link>
+    </div>
   );
 }
