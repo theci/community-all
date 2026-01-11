@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
+import { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -13,6 +13,7 @@ import { Button, Input, Card } from '@ddd3/design-system';
 export default function CreatePostPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const hasCheckedAuth = useRef(false);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -30,15 +31,26 @@ export default function CreatePostPage() {
     // 디버깅: 사용자 정보 확인
     console.log('Auth State:', { authLoading, isAuthenticated, user });
 
-    // 인증 확인
-    if (!authLoading && !isAuthenticated) {
-      alert('로그인이 필요합니다.');
-      router.push('/login?redirect=/posts/create');
+    // 인증 확인 (한 번만 실행)
+    if (!authLoading && !isAuthenticated && !hasCheckedAuth.current) {
+      hasCheckedAuth.current = true;
+
+      const shouldLogin = window.confirm(
+        '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?'
+      );
+
+      if (shouldLogin) {
+        router.push('/login?redirect=/posts/create');
+      } else {
+        router.push('/posts');
+      }
       return;
     }
 
     // 카테고리 로드
-    loadCategories();
+    if (isAuthenticated) {
+      loadCategories();
+    }
   }, [authLoading, isAuthenticated, user, router]);
 
   const loadCategories = async () => {

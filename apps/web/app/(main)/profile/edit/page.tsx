@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
 import { userService } from '@/lib/services';
@@ -9,6 +9,7 @@ import { Card, Button } from '@ddd3/design-system';
 export default function ProfileEditPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const hasCheckedAuth = useRef(false);
 
   const [formData, setFormData] = useState({
     profileImageUrl: '',
@@ -22,8 +23,18 @@ export default function ProfileEditPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login?redirect=/profile/edit');
+    if (!authLoading && !isAuthenticated && !hasCheckedAuth.current) {
+      hasCheckedAuth.current = true;
+
+      const shouldLogin = window.confirm(
+        '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?'
+      );
+
+      if (shouldLogin) {
+        router.push('/login?redirect=/profile/edit');
+      } else {
+        router.push('/profile');
+      }
       return;
     }
 

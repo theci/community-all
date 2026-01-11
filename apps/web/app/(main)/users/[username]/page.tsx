@@ -66,8 +66,13 @@ export default function UserPublicProfilePage() {
 
   const handleFollowToggle = async () => {
     if (!currentUser) {
-      alert('로그인이 필요합니다.');
-      router.push('/login');
+      const shouldLogin = window.confirm(
+        '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?'
+      );
+
+      if (shouldLogin) {
+        router.push('/login');
+      }
       return;
     }
 

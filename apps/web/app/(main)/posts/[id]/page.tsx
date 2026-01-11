@@ -98,8 +98,13 @@ export default function PostDetailPage() {
 
   const handleLike = async () => {
     if (!isAuthenticated || !user?.id) {
-      alert('로그인이 필요합니다.');
-      router.push(`/login?redirect=/posts/${postId}`);
+      const shouldLogin = window.confirm(
+        '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?'
+      );
+
+      if (shouldLogin) {
+        router.push(`/login?redirect=/posts/${postId}`);
+      }
       return;
     }
 
@@ -115,8 +120,13 @@ export default function PostDetailPage() {
 
   const handleScrap = async () => {
     if (!isAuthenticated || !user?.id) {
-      alert('로그인이 필요합니다.');
-      router.push(`/login?redirect=/posts/${postId}`);
+      const shouldLogin = window.confirm(
+        '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?'
+      );
+
+      if (shouldLogin) {
+        router.push(`/login?redirect=/posts/${postId}`);
+      }
       return;
     }
 

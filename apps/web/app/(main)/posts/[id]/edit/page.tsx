@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, useRef, FormEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { postService, categoryService } from '@/lib/services';
@@ -13,6 +13,7 @@ export default function EditPostPage() {
   const params = useParams();
   const postId = Number(params.id);
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const hasCheckedAuth = useRef(false);
 
   const [post, setPost] = useState<Post | null>(null);
   const [title, setTitle] = useState('');
@@ -27,16 +28,27 @@ export default function EditPostPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 인증 확인
-    if (!authLoading && !isAuthenticated) {
-      alert('로그인이 필요합니다.');
-      router.push(`/login?redirect=/posts/${postId}/edit`);
+    // 인증 확인 (한 번만 실행)
+    if (!authLoading && !isAuthenticated && !hasCheckedAuth.current) {
+      hasCheckedAuth.current = true;
+
+      const shouldLogin = window.confirm(
+        '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?'
+      );
+
+      if (shouldLogin) {
+        router.push(`/login?redirect=/posts/${postId}/edit`);
+      } else {
+        router.push(`/posts/${postId}`);
+      }
       return;
     }
 
     // 데이터 로드
-    loadPost();
-    loadCategories();
+    if (isAuthenticated) {
+      loadPost();
+      loadCategories();
+    }
   }, [authLoading, isAuthenticated, postId, router]);
 
   const loadPost = async () => {
