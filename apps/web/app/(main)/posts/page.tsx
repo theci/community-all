@@ -7,6 +7,7 @@ import { PostCard } from '@/components/features/post/PostCard';
 import { Button } from '@ddd3/design-system';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks';
+import { PostCardSkeleton, UserCardSkeleton, Spinner } from '@/components/ui/Skeleton';
 
 export default function PostsPage() {
   const { user, isAuthenticated } = useAuth();
@@ -21,6 +22,7 @@ export default function PostsPage() {
   const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
   const [followingUsers, setFollowingUsers] = useState<Set<number>>(new Set());
   const [showEmptyFollowing, setShowEmptyFollowing] = useState(false);
+  const [followingInProgress, setFollowingInProgress] = useState<Set<number>>(new Set());
 
   const loadPosts = async (currentPage: number, sort: string, categoryId?: number | null) => {
     try {
@@ -157,6 +159,11 @@ export default function PostsPage() {
   };
 
   const handleFollow = async (userId: number) => {
+    // 이미 진행 중이면 무시
+    if (followingInProgress.has(userId)) {
+      return;
+    }
+
     try {
       console.log('Attempting to follow user:', userId);
       console.log('Current logged-in user:', user?.id);
@@ -165,6 +172,9 @@ export default function PostsPage() {
         alert('자기 자신은 팔로우할 수 없습니다.');
         return;
       }
+
+      // 로딩 상태 시작
+      setFollowingInProgress(prev => new Set(prev).add(userId));
 
       await followService.follow(userId);
       setFollowingUsers(prev => new Set(prev).add(userId));
@@ -197,29 +207,41 @@ export default function PostsPage() {
 
       const errorMessage = err.response?.data?.message || '팔로우에 실패했습니다. 다시 시도해주세요.';
       alert(errorMessage);
+    } finally {
+      // 로딩 상태 종료
+      setFollowingInProgress(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
     }
   };
 
-  const handleSortChange = (newSort: 'latest' | 'popular' | 'trending' | 'following') => {
+  const handleSortChange = async (newSort: 'latest' | 'popular' | 'trending' | 'following') => {
+    if (loading) return; // 이미 로딩 중이면 무시
     setSortBy(newSort);
     setPage(0);
   };
 
-  const handleCategoryChange = (categoryId: number | null) => {
+  const handleCategoryChange = async (categoryId: number | null) => {
+    if (loading) return; // 이미 로딩 중이면 무시
     setSelectedCategory(categoryId);
     setPage(0);
   };
 
   const handlePreviousPage = () => {
-    if (page > 0) {
-      setPage(page - 1);
-    }
+    if (loading || page === 0) return; // 로딩 중이거나 첫 페이지면 무시
+    setPage(page - 1);
   };
 
   const handleNextPage = () => {
-    if (page < totalPages - 1) {
-      setPage(page + 1);
-    }
+    if (loading || page >= totalPages - 1) return; // 로딩 중이거나 마지막 페이지면 무시
+    setPage(page + 1);
+  };
+
+  const handlePageClick = (pageNum: number) => {
+    if (loading || pageNum === page) return; // 로딩 중이거나 현재 페이지면 무시
+    setPage(pageNum);
   };
 
   return (
@@ -242,7 +264,10 @@ export default function PostsPage() {
             <select
               value={selectedCategory || ''}
               onChange={(e) => handleCategoryChange(e.target.value ? Number(e.target.value) : null)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
+              className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               <option value="">전체 카테고리</option>
               {categories.map((category) => (
@@ -251,6 +276,7 @@ export default function PostsPage() {
                 </option>
               ))}
             </select>
+            {loading && <Spinner className="ml-2" />}
           </div>
         </div>
 
@@ -259,51 +285,63 @@ export default function PostsPage() {
           {isAuthenticated && (
             <button
               onClick={() => handleSortChange('following')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              disabled={loading}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                 sortBy === 'following'
                   ? 'bg-blue-600 dark:bg-blue-500 text-white'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
+              {loading && sortBy === 'following' && <Spinner />}
               팔로잉
             </button>
           )}
           <button
             onClick={() => handleSortChange('latest')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            disabled={loading}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               sortBy === 'latest'
                 ? 'bg-blue-600 dark:bg-blue-500 text-white'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
+            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
+            {loading && sortBy === 'latest' && <Spinner />}
             최신순
           </button>
           <button
             onClick={() => handleSortChange('popular')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            disabled={loading}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               sortBy === 'popular'
                 ? 'bg-blue-600 dark:bg-blue-500 text-white'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
+            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
+            {loading && sortBy === 'popular' && <Spinner />}
             인기순
           </button>
           <button
             onClick={() => handleSortChange('trending')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            disabled={loading}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               sortBy === 'trending'
                 ? 'bg-blue-600 dark:bg-blue-500 text-white'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
+            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
+            {loading && sortBy === 'trending' && <Spinner />}
             트렌딩
           </button>
         </div>
 
-        {/* 로딩 상태 */}
+        {/* 로딩 상태 - 스켈레톤 스크린 */}
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="space-y-4">
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
           </div>
         )}
 
@@ -329,7 +367,7 @@ export default function PostsPage() {
                     </p>
                   </div>
 
-                  {suggestedUsers.length > 0 && (
+                  {suggestedUsers.length > 0 ? (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                         추천 사용자
@@ -360,20 +398,42 @@ export default function PostsPage() {
                             </div>
                             <Button
                               onClick={() => handleFollow(suggestedUser.id)}
-                              disabled={followingUsers.has(suggestedUser.id)}
+                              disabled={followingUsers.has(suggestedUser.id) || followingInProgress.has(suggestedUser.id)}
                               className={
                                 followingUsers.has(suggestedUser.id)
                                   ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                                  : followingInProgress.has(suggestedUser.id)
+                                  ? 'bg-blue-400 dark:bg-blue-600 cursor-wait'
                                   : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white'
                               }
                             >
-                              {followingUsers.has(suggestedUser.id) ? '팔로잉' : '팔로우'}
+                              {followingInProgress.has(suggestedUser.id) ? (
+                                <span className="flex items-center gap-2">
+                                  <Spinner />
+                                  처리중...
+                                </span>
+                              ) : followingUsers.has(suggestedUser.id) ? (
+                                '팔로잉'
+                              ) : (
+                                '팔로우'
+                              )}
                             </Button>
                           </div>
                         ))}
                       </div>
                     </div>
-                  )}
+                  ) : loading ? (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                        추천 사용자
+                      </h3>
+                      <div className="grid gap-4">
+                        <UserCardSkeleton />
+                        <UserCardSkeleton />
+                        <UserCardSkeleton />
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -398,13 +458,14 @@ export default function PostsPage() {
               <div className="flex items-center justify-center gap-2 mt-8">
                 <button
                   onClick={handlePreviousPage}
-                  disabled={page === 0}
-                  className={`px-4 py-2 rounded-lg border ${
-                    page === 0
+                  disabled={page === 0 || loading}
+                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${
+                    page === 0 || loading
                       ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border-gray-300 dark:border-gray-700'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
+                  {loading && <Spinner />}
                   이전
                 </button>
 
@@ -424,13 +485,15 @@ export default function PostsPage() {
                     return (
                       <button
                         key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`px-4 py-2 rounded-lg ${
+                        onClick={() => handlePageClick(pageNum)}
+                        disabled={loading}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
                           page === pageNum
                             ? 'bg-blue-600 dark:bg-blue-500 text-white'
                             : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
+                        } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
+                        {loading && page === pageNum && <Spinner />}
                         {pageNum + 1}
                       </button>
                     );
@@ -439,13 +502,14 @@ export default function PostsPage() {
 
                 <button
                   onClick={handleNextPage}
-                  disabled={page >= totalPages - 1}
-                  className={`px-4 py-2 rounded-lg border ${
-                    page >= totalPages - 1
+                  disabled={page >= totalPages - 1 || loading}
+                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${
+                    page >= totalPages - 1 || loading
                       ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border-gray-300 dark:border-gray-700'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
+                  {loading && <Spinner />}
                   다음
                 </button>
               </div>
