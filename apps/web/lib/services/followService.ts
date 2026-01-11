@@ -10,7 +10,7 @@ interface ApiResponse<T> {
 export const followService = {
   // 팔로우
   follow: async (targetUserId: number): Promise<void> => {
-    await apiClient.post<ApiResponse<void>>(`/users/${targetUserId}/follow`);
+    await apiClient.post<ApiResponse<void>>(`/users/${targetUserId}/follow`, {});
   },
 
   // 언팔로우

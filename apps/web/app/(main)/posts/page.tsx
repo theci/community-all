@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { postService, categoryService } from '@/lib/services';
-import { Post, Category } from '@ddd3/types';
+import { postService, categoryService, userService, followService } from '@/lib/services';
+import { Post, Category, User } from '@ddd3/types';
 import { PostCard } from '@/components/features/post/PostCard';
 import { Button } from '@ddd3/design-system';
 import Link from 'next/link';
@@ -18,11 +18,15 @@ export default function PostsPage() {
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'trending' | 'following'>('latest');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
+  const [followingUsers, setFollowingUsers] = useState<Set<number>>(new Set());
+  const [showEmptyFollowing, setShowEmptyFollowing] = useState(false);
 
   const loadPosts = async (currentPage: number, sort: string, categoryId?: number | null) => {
     try {
       setLoading(true);
       setError(null);
+      setShowEmptyFollowing(false);
 
       let response;
 
@@ -47,9 +51,69 @@ export default function PostsPage() {
           setTotalPages(response?.pageInfo?.totalPages || 0);
         } else if (sort === 'following' && user) {
           // 팔로잉 피드
-          response = await postService.getFollowingFeed(currentPage, 20);
-          setPosts(response?.content || []);
-          setTotalPages(response?.pageInfo?.totalPages || 0);
+          try {
+            console.log('팔로잉 피드 조회 시작...');
+            console.log('현재 사용자:', user);
+            console.log('isAuthenticated:', isAuthenticated);
+
+            // 쿠키 확인
+            console.log('쿠키:', document.cookie);
+
+            response = await postService.getFollowingFeed(currentPage, 20);
+            console.log('팔로잉 피드 응답:', response);
+            setPosts(response?.content || []);
+            setTotalPages(response?.pageInfo?.totalPages || 0);
+
+            // 팔로잉 피드가 비어있으면 추천 사용자 로드
+            if (!response?.content || response.content.length === 0) {
+              console.log('팔로잉 피드가 비어있습니다. 팔로잉 목록 확인 중...');
+              // 실제로 팔로잉이 있는지 확인
+              const followingIds = await followService.getFollowingList(user.id);
+              console.log('팔로잉 목록:', followingIds);
+
+              if (followingIds && followingIds.length > 0) {
+                // 팔로잉은 있지만 게시물이 없는 경우
+                setShowEmptyFollowing(false);
+                // 메시지를 다르게 표시
+                setError('팔로우한 사용자들이 아직 게시글을 작성하지 않았습니다.');
+              } else {
+                // 정말로 팔로잉이 없는 경우
+                setShowEmptyFollowing(true);
+                await loadSuggestedUsers();
+              }
+            }
+          } catch (err: any) {
+            console.error('팔로잉 피드 조회 에러:', err);
+            console.error('에러 상세:', err.response?.data);
+            console.error('에러 상태 코드:', err.response?.status);
+
+            // 403 에러 처리 - 인증 문제일 가능성 확인
+            if (err.response?.status === 403) {
+              const cookies = document.cookie;
+              console.error('현재 쿠키:', cookies);
+
+              // 쿠키가 없거나 인증 토큰이 없으면 로그인 페이지로 리다이렉트
+              if (!cookies || cookies.trim() === '') {
+                alert('로그인 세션이 만료되었습니다. 다시 로그인해주세요.');
+                localStorage.removeItem('auth-storage');
+                window.location.href = '/login?redirect=/posts';
+                return;
+              }
+
+              // 쿠키는 있지만 403이 발생한 경우 - 팔로잉이 없을 가능성
+              console.log('쿠키는 존재하지만 403 에러 발생 - 팔로잉 확인 중...');
+              setShowEmptyFollowing(true);
+              await loadSuggestedUsers();
+              setPosts([]);
+            } else if (err.response?.data?.message?.includes('팔로우')) {
+              // 팔로잉이 없는 경우
+              setShowEmptyFollowing(true);
+              await loadSuggestedUsers();
+              setPosts([]);
+            } else {
+              throw err;
+            }
+          }
         }
       }
     } catch (err: any) {
@@ -75,6 +139,64 @@ export default function PostsPage() {
       setCategories(data || []);
     } catch (err) {
       console.error('Failed to load categories:', err);
+    }
+  };
+
+  const loadSuggestedUsers = async () => {
+    try {
+      const users = await userService.getSuggestedUsers(0, 10);
+      console.log('Current user ID:', user?.id);
+      console.log('Suggested users:', users);
+      // 현재 사용자 제외
+      const filtered = users.filter(u => u.id !== user?.id);
+      console.log('Filtered users:', filtered);
+      setSuggestedUsers(filtered);
+    } catch (err) {
+      console.error('Failed to load suggested users:', err);
+    }
+  };
+
+  const handleFollow = async (userId: number) => {
+    try {
+      console.log('Attempting to follow user:', userId);
+      console.log('Current logged-in user:', user?.id);
+
+      if (userId === user?.id) {
+        alert('자기 자신은 팔로우할 수 없습니다.');
+        return;
+      }
+
+      await followService.follow(userId);
+      setFollowingUsers(prev => new Set(prev).add(userId));
+
+      // 팔로우 성공 시 사용자에게 피드백
+      alert('팔로우했습니다! 팔로잉 탭에서 해당 사용자의 게시글을 확인할 수 있습니다.');
+
+      // 팔로우 성공 후 자동으로 팔로잉 탭으로 전환
+      if (sortBy === 'following') {
+        // 이미 팔로잉 탭이면 새로고침
+        await loadPosts(0, 'following', null);
+        setPage(0);
+      }
+    } catch (err: any) {
+      console.error('Failed to follow user:', err);
+      console.error('Error response:', err.response?.data);
+
+      // 403 에러인 경우 로그인 상태 확인
+      if (err.response?.status === 403) {
+        const cookies = document.cookie;
+        console.error('팔로우 시도 시 쿠키:', cookies);
+
+        if (!cookies || cookies.trim() === '') {
+          alert('로그인 세션이 만료되었습니다. 다시 로그인해주세요.');
+          localStorage.removeItem('auth-storage');
+          window.location.href = '/login?redirect=/posts';
+          return;
+        }
+      }
+
+      const errorMessage = err.response?.data?.message || '팔로우에 실패했습니다. 다시 시도해주세요.';
+      alert(errorMessage);
     }
   };
 
@@ -196,14 +318,73 @@ export default function PostsPage() {
         {!loading && !error && posts && (
           <>
             {posts.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 dark:text-gray-400 mb-4">아직 작성된 게시글이 없습니다.</p>
-                <Link href="/posts/create">
-                  <Button className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
-                    첫 게시글 작성하기
-                  </Button>
-                </Link>
-              </div>
+              showEmptyFollowing ? (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
+                  <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      팔로우한 사람이 없습니다
+                    </h2>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      다른 사용자를 팔로우하고 그들의 게시글을 확인해보세요
+                    </p>
+                  </div>
+
+                  {suggestedUsers.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                        추천 사용자
+                      </h3>
+                      <div className="grid gap-4">
+                        {suggestedUsers.map((suggestedUser) => (
+                          <div
+                            key={suggestedUser.id}
+                            className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                                {suggestedUser.nickname?.[0]?.toUpperCase() || 'U'}
+                              </div>
+                              <div>
+                                <Link
+                                  href={`/users/${suggestedUser.id}`}
+                                  className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                                >
+                                  {suggestedUser.nickname || suggestedUser.email}
+                                </Link>
+                                {suggestedUser.profile?.bio && (
+                                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    {suggestedUser.profile.bio}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              onClick={() => handleFollow(suggestedUser.id)}
+                              disabled={followingUsers.has(suggestedUser.id)}
+                              className={
+                                followingUsers.has(suggestedUser.id)
+                                  ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                                  : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white'
+                              }
+                            >
+                              {followingUsers.has(suggestedUser.id) ? '팔로잉' : '팔로우'}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">아직 작성된 게시글이 없습니다.</p>
+                  <Link href="/posts/create">
+                    <Button className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
+                      첫 게시글 작성하기
+                    </Button>
+                  </Link>
+                </div>
+              )
             ) : (
               <div className="space-y-4">
                 {posts.map((post) => (

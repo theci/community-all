@@ -132,14 +132,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        
+        String method = request.getMethod();
+
+        // 인증이 필요한 게시글 관련 경로들
+        if (path.startsWith("/api/v1/posts/following") ||
+            path.startsWith("/api/v1/posts/likes") ||
+            path.startsWith("/api/v1/posts/scraps")) {
+            return false; // 필터 적용 (인증 필요)
+        }
+
         // 공개 API 경로
         return path.startsWith("/api/v1/users/register") ||
                path.startsWith("/api/v1/users/login") ||
                path.startsWith("/api/v1/users/check-email") ||
                path.startsWith("/api/v1/users/check-nickname") ||
                path.startsWith("/api/v1/categories") ||
-               path.startsWith("/api/v1/posts") && request.getMethod().equals("GET") ||
+               (path.startsWith("/api/v1/posts") && method.equals("GET")) ||
                path.startsWith("/api/v1/scrap-folders/public") ||
                path.startsWith("/h2-console") ||
                path.startsWith("/swagger") ||

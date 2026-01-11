@@ -50,4 +50,18 @@ export const userService = {
   }): Promise<void> => {
     await apiClient.put<ApiResponse<void>>('/users/me/profile', data);
   },
+
+  // 추천 사용자 목록 조회
+  getSuggestedUsers: async (page = 0, size = 10): Promise<User[]> => {
+    try {
+      const response = await apiClient.get<ApiResponse<{ content: User[] }>>(
+        `/users?page=${page}&size=${size}`
+      );
+      console.log('Raw API response:', response.data);
+      return response.data.data.content || [];
+    } catch (error) {
+      console.error('Error fetching suggested users:', error);
+      throw error;
+    }
+  },
 };

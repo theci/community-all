@@ -39,6 +39,24 @@ export const useAuthStore = create<AuthState>()(
 
           // 토큰은 HTTP-only 쿠키로 자동 설정되므로 localStorage 사용 불필요
 
+          // 로그인 후 쿠키 확인
+          console.log('Cookies after login:', document.cookie);
+
+          // 쿠키가 설정되었는지 확인 (약간의 지연 후)
+          setTimeout(() => {
+            const cookies = document.cookie;
+            console.log('Cookies after 100ms:', cookies);
+
+            // 인증 쿠키가 없으면 경고
+            if (!cookies || (!cookies.includes('accessToken') && !cookies.includes('Authorization'))) {
+              console.warn('⚠️ 경고: 로그인 후 인증 쿠키가 설정되지 않았습니다!');
+              console.warn('백엔드가 Set-Cookie 헤더를 제대로 보내고 있는지 확인하세요.');
+              console.warn('CORS 설정에서 credentials: true가 허용되어 있는지 확인하세요.');
+            } else {
+              console.log('✅ 인증 쿠키가 정상적으로 설정되었습니다.');
+            }
+          }, 100);
+
           set({
             user: response.user,
             isAuthenticated: true,

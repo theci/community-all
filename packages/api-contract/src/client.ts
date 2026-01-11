@@ -43,6 +43,9 @@ apiClient.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
+        // localStorage의 인증 상태 초기화
+        localStorage.removeItem('auth-storage');
+
         // 쿠키는 백엔드에서 관리하므로 여기서는 리다이렉트만 수행
         const currentPath = window.location.pathname;
         window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
